@@ -28,7 +28,7 @@ Key Components:
 
 1. Clone the repository:
     ```
-    https://github.com/raphael-shin/my-aws-cdk-sample.git
+    https://github.com/aws-samples/sample-generative-ai-gallery.git
     ```
 
 ### Step 1: Deploy Backend
