@@ -8,6 +8,8 @@ This showcase demonstrates the integration of various AWS AI services for creati
 
 ## Architecture
 
+![](./docs/images/genai-gallery-architecture-v1.jpg)
+
 Key Components:
 
 - [AWS Amplify](https://aws.amazon.com/amplify/): Provides frontend application hosting (using React).
