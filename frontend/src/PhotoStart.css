@@ -1,0 +1,88 @@
+
+.photo-start {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+    font-family: 'Amazon Ember', sans-serif;
+    position: relative;
+}
+
+.banner-image {
+    width: 100%;
+    height: auto;
+    max-height: 25vh;
+    object-fit: cover;
+    object-position: top;
+    position: absolute;
+    top: 0;
+    left: 0;
+}
+  
+h1 {
+    margin-bottom: 2rem;
+    text-align: center;
+    font-size: clamp(1.5rem, 3vw, 2.5rem); /* 브라우저 크기에 따라 폰트 크기 조정 */
+}
+
+.gallery-title {
+    position: absolute;
+    width: 800px;
+    top: 30vh;
+    left: 50%;
+    transform: translateX(-50%);
+    font-size: 2rem;
+    font-weight: bold;
+    text-align: center;
+}
+
+@media (max-width: 768px) {
+    .gallery-title {
+      font-size: 1.6rem;
+    }
+}
+
+.content-container {
+    padding-top:10vh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 2rem; /* 요소 사이 간격 */
+}
+
+.photo-start-link {
+    text-decoration: none;
+    color: #007bff;
+    font-size: 1.2rem;
+    text-align: center;
+}
+
+.banner-image {
+    max-width: 100%;
+    height: auto;
+    margin-bottom: 2rem;
+}
+
+.start-button button {
+    font-size: 16px;
+    padding: 12px 24px;
+    border-radius: 4px;
+    border: none;
+    background-color: #007bff;
+    color: #fff;
+    cursor: pointer;
+  }
+
+  .lang-button button {
+    font-size: 12px;
+    padding: 10px 12px;
+    width: 80px;
+    border-radius: 3px;
+    border: none;
+    background-color: #979797;
+    color: #fff;
+    cursor: pointer;
+    margin-right: 10px;
+  }
+  

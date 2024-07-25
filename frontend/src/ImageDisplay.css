@@ -1,0 +1,76 @@
+.loading-view {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 100vh;
+}
+
+.spinner {
+  z-index: 3;
+  width: 50px;
+  padding: 8px;
+  aspect-ratio: 1;
+  border-radius: 50%;
+  background: #ff9900;
+  --_m: 
+    conic-gradient(#0000 10%,#000),
+    linear-gradient(#000 0 0) content-box;
+  -webkit-mask: var(--_m);
+          mask: var(--_m);
+  -webkit-mask-composite: source-out;
+          mask-composite: subtract;
+  animation: l3 1s infinite linear;
+}
+@keyframes l3 {to{transform: rotate(1turn)}}
+
+.bg-image {
+  position: absolute;
+  top:0;
+  height: 100%;
+  width: 100%;
+  object-fit:cover;
+  z-index: 0;
+}
+
+.box-group {
+  width: 100vw;
+  height: 100vh;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  background-color: black;
+  flex-direction: column;
+}
+
+.bg-box {
+  position: relative;
+  width: max(20vw, 36vh);
+  height: max(50vw, 90vh);
+  border: solid 2px;
+  box-sizing: border-box;
+
+}
+
+.page-transition-enter {
+  opacity: 0;
+  width: max(20vw, 36vh);
+}
+
+.page-transition-enter-active {
+  opacity: 1;
+  width: max(20vw, 36vh);
+  transition: opacity 5000ms ease-in-out
+}
+
+.page-transition-exit {
+  opacity: 1;
+  width: 0;
+  border: none;
+}
+
+.page-transition-exit-active {
+  opacity: 0;
+  width: 0;
+  border: none;
+  transition: opacity 5000ms ease-in-out
+}
