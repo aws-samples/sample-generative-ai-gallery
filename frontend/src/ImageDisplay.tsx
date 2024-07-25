@@ -1,85 +1,89 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import { TransitionGroup, CSSTransition } from 'react-transition-group';
-import { useQuery } from '@tanstack/react-query'
 import { useParams } from "react-router-dom";
 import "./ImageDisplay.css";
-
+import LoadingGIF from "./assets/loading.gif";
 
 const ImageDisplay = () => {
-
-    const [img, setImg] = useState({downloadUrl: Date.now().toString(), uuid: ""});
     const { uuid } = useParams<{ uuid: string }>();
-    const [ curTime, setCurTime ] = useState<number>(Date.now());
-    const [ timeSpent, setTimeSpent ] = useState(0);
-    
-    const callApi = async () => {
-        try{
-            const response = await fetch(`${process.env.REACT_APP_API_ENDPOINT}/apis/images/${uuid}`, {
+    const [timeSpent, setTimeSpent] = useState(0);
+    const [isLoading, setIsLoading] = useState(true);
+
+    const imgRef = useRef({ downloadUrl: "", uuid: "" });
+
+    const updateImg = (data) => {
+        imgRef.current = { downloadUrl: data.downloadUrl, uuid: data.uuid };
+    };
+
+    useEffect(() => {
+        try {
+            fetch(`${process.env.REACT_APP_API_ENDPOINT}/apis/images/${uuid}`, {
                 method: 'GET',
                 headers: { 'Content-Type': 'application/json' }
-            });
-            return await response.json();
+            })
+                .then(response => response.json())
+                .then(data => updateImg(data));
         } catch (err) {
             console.log(err);
         }
-    }
+    }, []);
 
-    const { data } = useQuery({
-        queryKey: ['display'], 
-        queryFn: callApi,
-        refetchInterval: 5000,
-        refetchIntervalInBackground: true,
-    });
-
-    useEffect(() => {
-        if(data && data.uuid){
-              setImg(data);
-        }
-    }, [data]);
-    
     useEffect(() => {
         let timer = setInterval(() => {
-            setTimeSpent((val) => val+1);
+            setTimeSpent((val) => val + 1);
         }, 1000);
 
-        return () => clearInterval(timer)
-      }, []);
+        return () => clearInterval(timer);
+    }, []);
 
-    if (img.downloadUrl === "") 
-      return (
-        <div className="loading-view">
-                <div className="spinner" />
-        </div>
-      );
-  
+    useEffect(() => {
+        let checkImage = setInterval(() => {
+            let image = new Image();
+            image.src = imgRef.current.downloadUrl;
+            image.onload = () => {
+                setIsLoading(false);
+                clearInterval(checkImage);
+            };
+            image.onerror = () => {
+                setIsLoading(true);
+            };
+        }, 5000);
+
+        return () => clearInterval(checkImage);
+    }, []);
+
     return (
         <div className="box-group">
-          <h3 style={{color:"white"}}>Spent Time: {timeSpent}</h3>
-          <TransitionGroup style={{ display: 'flex'}}>
-              {
+            <h3 style={{ color: "white" }}>Spent Time: {timeSpent}</h3>
+            <TransitionGroup style={{ display: 'flex' }}>
                 <CSSTransition
-                    key={img.uuid}
+                    key={imgRef.current.uuid}
                     timeout={5000}
                     classNames={"page-transition"}
                     unmountOnExit
                     in={true}
                 >
-                  <DisplayComponent url={img.downloadUrl} />
+                    {isLoading ? <LoadingComponent /> : <DisplayComponent url={imgRef.current.downloadUrl} />}
                 </CSSTransition>
-              }
-          </TransitionGroup>    
+            </TransitionGroup>
         </div>
     );
-}
+};
 
-const DisplayComponent = ({url}: {url:string}) => {
-
+const LoadingComponent = () => {
     return (
-        <div className="bg-box"> 
+        <div className="bg-box">
+            <img src={LoadingGIF} className="bg-image" alt="loading" />
+        </div>
+    )
+};
+
+const DisplayComponent = ({ url }: { url: string }) => {
+    return (
+        <div className="bg-box">
             <img src={url} className="bg-image" alt="gallery" />
         </div>
     )
-}
+};
 
-  
 export default ImageDisplay;
