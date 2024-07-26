@@ -115,6 +115,13 @@ Key Components:
     npm start
     ```
 
+### Remove resources
+
+> [!Important]
+> Please be mindful of the costs for all deployed resources. Make sure to delete resources after you are finished using them.
+
+If using cli and CDK, please `cdk destroy`. If not, access [CloudFormation](https://console.aws.amazon.com/cloudformation/home) and then delete all stacks manually.
+
 ## Contacts
 
 - [Chulwoo Choi](https://github.com/prorhap)
