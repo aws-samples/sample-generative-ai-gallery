@@ -1,6 +1,7 @@
 from aws_cdk import (
     Stack,
     CfnOutput,
+    Duration,
     aws_apigateway as apigw,
     aws_lambda as lambda_,
     aws_ssm as ssm,
@@ -26,11 +27,22 @@ class ApiGatewayStack(Stack):
                 resources=[f"arn:aws:s3:::{self.s3_bucket_name}/*"],
             )
         )
-        self.get_image_lambda = self.create_lambda_function("GetImageFunction", "get_image", self.s3_result_images_path)
+        self.get_image_lambda = self.create_lambda_function("GetImageFunction", "get_image", self.s3_result_images_path, timeout=Duration.seconds(60))
         self.get_image_lambda.add_to_role_policy(
             iam.PolicyStatement(
                 actions=["s3:GetObject"],
                 resources=[f"arn:aws:s3:::{self.s3_bucket_name}/*"],
+            )
+        )
+
+        self.get_image_lambda.add_to_role_policy(
+            iam.PolicyStatement(
+                actions=["bedrock:InvokeModel"],
+                resources=[
+                    f"arn:aws:bedrock:{self.region}::foundation-model/anthropic.claude-3-5-sonnet-20240620-v1:0",
+                    f"arn:aws:bedrock:{self.region}::foundation-model/anthropic.claude-3-sonnet-20240229-v1:0",
+                    f"arn:aws:bedrock:{self.region}::foundation-model/anthropic.claude-3-haiku-20240307-v1:0"
+                ]
             )
         )
 
@@ -43,7 +55,7 @@ class ApiGatewayStack(Stack):
             rest_api_name="GenAI Gallery Image API",
             description="This service processes images.")
 
-    def create_lambda_function(self, id, handler, object_path):
+    def create_lambda_function(self, id, handler, object_path, timeout=Duration.seconds(3)):
         return lambda_.Function(self, id,
             runtime=lambda_.Runtime.PYTHON_3_9,
             handler=f"index.handler",
@@ -51,7 +63,8 @@ class ApiGatewayStack(Stack):
             environment={
                 "BUCKET_NAME": self.s3_bucket_name,
                 "OBJECT_PATH": object_path
-            })
+            },
+            timeout=timeout)
 
     def create_api_resources(self):
         images_resource = self.api.root.add_resource("apis").add_resource("images")

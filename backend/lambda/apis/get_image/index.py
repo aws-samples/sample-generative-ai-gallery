@@ -18,6 +18,7 @@ MODELS = [
 ]
 
 def call_bedrock_model(model_id, body):
+    print(f"Invoking Bedrock model: {model_id}")
     try:
         response = bedrock.invoke_model(
             body=body,
@@ -25,21 +26,27 @@ def call_bedrock_model(model_id, body):
             contentType='application/json',
             accept='application/json'
         )
+        print(f"Bedrock API response: {response}")
         response_body = json.loads(response['body'].read())
-        return json.loads(response_body['content'][0]['text']), model_id
+        print(f"Bedrock API response: {response_body}")
+        print(f"Bedrock API response: {response_body['content'][0]['text']}")
+        return response_body['content'][0]['text'], model_id
     except ClientError as e:
         if e.response['Error']['Code'] == 'ThrottlingException':
             print(f"Model {model_id} quota exceeded. Trying next model.")
             return None
         else:
+            print(f"Error invoking Bedrock model: {e}")
             raise e
+    except Exception as e:
+        print(f"Error invoking Bedrock model: {e}")
+        raise e
 
 def invoke_bedrock_api(prompt, image_data) -> Tuple[Dict, str]:
     base64_image = base64.b64encode(image_data).decode('utf-8')
-
     body = json.dumps({
-        "anthropic_version": "bedrock-2023-05-31",
-        "max_tokens": 1000,
+        "anthropic_version": "",
+        "max_tokens": 2000,
         "messages": [
             {
                 "role": "user",
@@ -69,16 +76,20 @@ def invoke_bedrock_api(prompt, image_data) -> Tuple[Dict, str]:
     raise Exception("All models failed due to quota limits")
 
 def handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
+    
+    print(f"Received event: {json.dumps(event)}")
+    
     try:
         uuid = event['pathParameters']['uuid']
         if not uuid:
             return create_response(400, {'error': 'Invalid request: Missing UUID'})
 
         object_key = f"{OBJECT_PATH}{uuid}.png"
+        print(f"Fetching image from S3: {object_key}")
         response = s3_client.get_object(Bucket=BUCKET_NAME, Key=object_key)
         image_data = response['Body'].read()
 
-        prompt = "Create a fictional past life story based on the person in the image. Limit the story to 150 characters. Output the result in JSON format in English, Korean, and Japanese. example: {'ko': '한글', 'en': 'English', 'ja': '日本語'}"
+        prompt = "너는 역사 소설가야. 이미지 속 인물을 바탕으로 가상의 전생 스토리를 만들어주세요. 스토리의 글자는 150개로 제한해주세요. 결과는 영어, 한글, 일본어로 json 형태로 출력해주세요. 예:: {'ko': '한글', 'en': 'English', 'ja': '日本語'}"
         result, used_model = invoke_bedrock_api(prompt, image_data)
         
         presigned_url = generate_presigned_url(object_key)
