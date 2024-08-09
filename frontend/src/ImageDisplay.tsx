@@ -1,27 +1,53 @@
-import React, { useEffect, useState, useRef } from "react";
+import { useEffect, useState, useRef } from "react";
 import { TransitionGroup, CSSTransition } from 'react-transition-group';
 import { useParams } from "react-router-dom";
 import "./ImageDisplay.css";
 import LoadingGIF from "./assets/loading.gif";
 
+interface StoryData {
+    en: string;
+    ko: string;
+    ja: string;
+}
+
 const ImageDisplay = () => {
-    const { uuid } = useParams();
+    const { uuid } = useParams<{ uuid: string }>();
     const [timeSpent, setTimeSpent] = useState(0);
     const [isLoading, setIsLoading] = useState(true);
 
-    const imgRef = useRef({ downloadUrl: "", uuid: "", story: {} });
+    const imgRef = useRef<{ downloadUrl: string; uuid: string; story: StoryData }>({
+        downloadUrl: "",
+        uuid: "",
+        story: { en: "", ko: "", ja: "" }
+    });
 
-    function extractJsonContent(input) {
-        const endIndex = input.lastIndexOf('</JSON>');
-        if (endIndex !== -1) {
-          return input.substring(0, endIndex).trim();
+    function extractJsonContent(input: string): string {
+        const startIndex = input.indexOf('{');
+        const endIndex = input.lastIndexOf('}');
+        if (startIndex !== -1 && endIndex !== -1) {
+            return input.substring(startIndex, endIndex + 1);
         }
         return input;
     }
 
-    const updateImg = (data) => {
-        const storyJson = JSON.parse(extractJsonContent(data.story));
-        imgRef.current = { downloadUrl: data.downloadUrl, uuid: data.uuid, story: storyJson };
+    function parseStoryData(jsonString: string): StoryData {
+        try {
+            const parsedData = JSON.parse(jsonString);
+            return {
+                en: parsedData.en || "",
+                ko: parsedData.ko || "",
+                ja: parsedData.ja || ""
+            };
+        } catch (error) {
+            console.error("Error parsing JSON:", error);
+            return { en: "", ko: "", ja: "" };
+        }
+    }
+
+    const updateImg = (data: { downloadUrl: string; uuid: string; story: string }) => {
+        const jsonContent = extractJsonContent(data.story);
+        const storyData = parseStoryData(jsonContent);
+        imgRef.current = { downloadUrl: data.downloadUrl, uuid: data.uuid, story: storyData };
     };
 
     useEffect(() => {
@@ -76,7 +102,7 @@ const ImageDisplay = () => {
                 <CSSTransition
                     key={imgRef.current.uuid}
                     timeout={5000}
-                    classNames="page-transition"
+                    classNames={"page-transition"}
                     unmountOnExit
                     in={true}
                 >
@@ -95,14 +121,16 @@ const LoadingComponent = () => {
     )
 };
 
-const DisplayComponent = ({ url, story }) => {
-    const formattedStory = Object.values(story).join('\n\n\n');
-
+const DisplayComponent = ({ url, story }: { url: string, story: StoryData }) => {
     return (
         <div className="bg-box">
             <div className="bg-textbox">
                 <div className="bg-text">
-                    <pre>{formattedStory}</pre>
+                    <span>
+                        {story.en}<br /><br />
+                        {story.ko}<br /><br />
+                        {story.ja}
+                    </span>
                 </div>
             </div>
             <img src={url} className="bg-image" alt="gallery" />
