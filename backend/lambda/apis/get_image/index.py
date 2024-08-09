@@ -89,7 +89,7 @@ def handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
         response = s3_client.get_object(Bucket=BUCKET_NAME, Key=object_key)
         image_data = response['Body'].read()
 
-        prompt = "너는 역사 소설가야. 이미지 속 인물을 바탕으로 가상의 전생 스토리를 만들어주세요. 스토리의 글자는 150개로 제한해주세요. 결과는 영어, 한글, 일본어로 json 형태로 출력해주세요. 예:: {'ko': '한글', 'en': 'English', 'ja': '日本語'}"
+        prompt = "당신은 역사 소설가입니다. 이미지 속 인물을 바탕으로 가상의 전생 스토리를 만들어주세요. 스토리의 글자는 150개로 제한해주세요. 결과는 영어, 한글, 일본어로 json 형태로 출력해주세요. 예:: {'ko': '한글', 'en': 'English', 'ja': '日本語'}"
         result, used_model = invoke_bedrock_api(prompt, image_data)
         
         presigned_url = generate_presigned_url(object_key)
