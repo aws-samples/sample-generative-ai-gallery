@@ -64,6 +64,10 @@ def invoke_bedrock_api(prompt, image_data) -> Tuple[Dict, str]:
                         "text": prompt
                     }
                 ]
+            },
+            {
+                "role": "assistant",
+                "content": [{"type": "text", "text": "<JSON>"}]
             }
         ]
     })
@@ -89,7 +93,14 @@ def handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
         response = s3_client.get_object(Bucket=BUCKET_NAME, Key=object_key)
         image_data = response['Body'].read()
 
-        prompt = "당신은 역사 소설가입니다. 이미지 속 인물을 바탕으로 가상의 전생 스토리를 만들어주세요. 스토리의 글자는 150개로 제한해주세요. 결과는 영어, 한글, 일본어로 json 형태로 출력해주세요. 예:: {'ko': '한글', 'en': 'English', 'ja': '日本語'}"
+        prompt = """
+        당신은 이미지 속 인물과 사물을 분석하고, 가상의 전생 스토리를 만들어주세요.
+        1.특정 개인을 식별하는 것은 금지됩니다. 스토리의 주인공은 실존하지 않는 가상의 인물이어야 합니다.
+        2.스토리의 인물은 당신이라는 명칭으로 시작해야 합니다.
+        3.일대기 스토리의 글자는 150개로 제한해주세요.
+        4. 당신이 분석한 내용을 제외하고, 일대기 스토리만 영어, 한글, 일본어로 json 형태로 출력해주세요. json 형태 외 다른 내용은 아웃풋으로 포함하지 않습니다.
+        예:: {'ko': '한글', 'en': 'English', 'ja': '日本語'}
+        """
         result, used_model = invoke_bedrock_api(prompt, image_data)
         
         presigned_url = generate_presigned_url(object_key)

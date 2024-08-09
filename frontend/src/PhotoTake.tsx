@@ -70,7 +70,10 @@ const PhotoTake = () => {
       try {
         const base64Data = Buffer.from(imageSrc.replace(/^data:image\/\w+;base64,/, ""), 'base64');
         const config = {
-          headers: { 'Content-Type': 'image/png' },
+          headers: { 
+            'Content-Type': 'image/png',
+            'Access-Control-Allow-Origin': '*', // CORS 설정 추가
+          },
           onUploadProgress: (progressEvent) => {
             const percentCompleted = Math.round((progressEvent.loaded * 100) / progressEvent.total);
             setUploadProgress1(percentCompleted);

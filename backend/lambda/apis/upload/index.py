@@ -16,7 +16,9 @@ def create_response(status_code: int, body: Dict[str, Any]) -> Dict[str, Any]:
         'body': json.dumps(body),
         'headers': {
             'Content-Type': 'application/json',
-            'Access-Control-Allow-Origin': '*'
+            'Access-Control-Allow-Origin': '*',
+            'Access-Control-Allow-Headers': 'Content-Type,X-Amz-Date,Authorization,X-Api-Key,X-Amz-Security-Token',
+            'Access-Control-Allow-Methods': 'OPTIONS,GET,POST'
         }
     }
 
@@ -33,6 +35,10 @@ def generate_presigned_url(object_key: str) -> str:
     )
 
 def handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
+    # Handle preflight OPTIONS request
+    if event['httpMethod'] == 'OPTIONS':
+        return create_response(200, {})
+    
     try:
         file_uuid = generate_unique_id()
         object_key = f"{OBJECT_PATH}{file_uuid}"
