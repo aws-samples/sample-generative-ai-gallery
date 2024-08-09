@@ -51,7 +51,7 @@ const PhotoTake = () => {
   const uploadImage = () => {
     
     setUploadProgress1(1);
-    fetch(`${process.env.REACT_APP_API_ENDPOINT}/apis/images/upload`)
+    fetch(`${process.env.REACT_APP_API_ENDPOINT}apis/images/upload`)
     .then(response => response.json())
     .then(data => {
       console.log('Fetched presigned data:', data); 
