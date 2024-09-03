@@ -13,11 +13,13 @@ const PhotoTake = () => {
   const [uploadProgress1, setUploadProgress1] = useState(0); 
   const [uploadProgress2, setUploadProgress2] = useState(100); 
   const navigate = useNavigate();
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
   const [showPrivacyModal, setShowPrivacyModal] = useState(true);
   const [agreementUserName, setAgreementUserName] = useState(null);
   const [agreementResult, setAgreementResult] = useState(false);
   
+  const currentLanguage = i18n.language;
+
   useEffect(() => {
     // 페이지 접근 시 개인정보 동의 모달 표시
     setShowPrivacyModal(false);
@@ -51,7 +53,8 @@ const PhotoTake = () => {
   const uploadImage = () => {
     
     setUploadProgress1(1);
-    fetch(`${process.env.REACT_APP_API_ENDPOINT}apis/images/upload`)
+    console.log("language = "+ currentLanguage);
+    fetch(`${process.env.REACT_APP_API_ENDPOINT}apis/images/upload?lang=${currentLanguage}`)
     .then(response => response.json())
     .then(data => {
       console.log('Fetched presigned data:', data); 
