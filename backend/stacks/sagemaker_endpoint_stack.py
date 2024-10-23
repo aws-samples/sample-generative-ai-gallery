@@ -5,7 +5,7 @@ from aws_cdk import aws_s3 as s3
 from constructs import Construct
 
 class SageMakerEndpointStack(Stack):
-    def __init__(self, scope: Construct, construct_id: str, roop_image_uri: str, gfpgan_image_uri: str, codebuild_status_resource: CustomResource, **kwargs) -> None:
+    def __init__(self, scope: Construct, construct_id: str, inswapper_image_uri: str, gfpgan_image_uri: str, codebuild_status_resource: CustomResource, **kwargs) -> None:
         super().__init__(scope, construct_id, **kwargs)
 
         # Add a dependency on the CodeBuild status resource
@@ -21,14 +21,14 @@ class SageMakerEndpointStack(Stack):
             ]
         )
 
-        # Create SageMaker Model for Roop
-        roop_model = sagemaker.CfnModel(self, "RoopModel",
+        # Create SageMaker Model for Inswapper
+        inswapper_model = sagemaker.CfnModel(self, "InswapperModel",
             execution_role_arn=sagemaker_role.role_arn,
             primary_container={
-                "image": roop_image_uri,
+                "image": inswapper_image_uri,
                 "mode": "SingleModel"
             },
-            model_name="roop-model"
+            model_name="inswapper-model"
         )
 
         # Create SageMaker Model for GFPGAN
@@ -41,26 +41,26 @@ class SageMakerEndpointStack(Stack):
             model_name="gfpgan-model"
         )
 
-        # Create SageMaker Endpoint Configuration for Roop
-        roop_endpoint_config = sagemaker.CfnEndpointConfig(self, "RoopEndpointConfig",
+        # Create SageMaker Endpoint Configuration for Inswapper
+        inswapper_endpoint_config = sagemaker.CfnEndpointConfig(self, "InswapperEndpointConfig",
             production_variants=[
                 {
                     "initialInstanceCount": 1,
-                    "instanceType": "ml.g4dn.xlarge",
-                    "modelName": roop_model.model_name,
-                    "variantName": "RoopVariant"
+                    "instanceType": "ml.g6.xlarge",
+                    "modelName": inswapper_model.model_name,
+                    "variantName": "InswapperVariant"
                 }
             ],
-            endpoint_config_name="roop-endpoint-config"
+            endpoint_config_name="inswapper-endpoint-config"
         )
-        roop_endpoint_config.add_dependency(roop_model)
+        inswapper_endpoint_config.add_dependency(inswapper_model)
 
         # Create SageMaker Endpoint Configuration for GFPGAN
         gfpgan_endpoint_config = sagemaker.CfnEndpointConfig(self, "GfpganEndpointConfig",
             production_variants=[
                 {
                     "initialInstanceCount": 1,
-                    "instanceType": "ml.g4dn.xlarge",
+                    "instanceType": "ml.g6.xlarge",
                     "modelName": gfpgan_model.model_name,
                     "variantName": "GfpganVariant"
                 }
@@ -69,12 +69,12 @@ class SageMakerEndpointStack(Stack):
         )
         gfpgan_endpoint_config.add_dependency(gfpgan_model)
 
-        # Create SageMaker Endpoint for Roop
-        roop_endpoint = sagemaker.CfnEndpoint(self, "RoopEndpoint",
-            endpoint_config_name=roop_endpoint_config.endpoint_config_name,
-            endpoint_name="roop-endpoint"
+        # Create SageMaker Endpoint for Inswapper
+        inswapper_endpoint = sagemaker.CfnEndpoint(self, "InswapperEndpoint",
+            endpoint_config_name=inswapper_endpoint_config.endpoint_config_name,
+            endpoint_name="inswapper-endpoint"
         )
-        roop_endpoint.add_dependency(roop_endpoint_config)
+        inswapper_endpoint.add_dependency(inswapper_endpoint_config)
 
         # Create SageMaker Endpoint for GFPGAN
         gfpgan_endpoint = sagemaker.CfnEndpoint(self, "GfpganEndpoint",
@@ -84,5 +84,5 @@ class SageMakerEndpointStack(Stack):
         gfpgan_endpoint.add_dependency(gfpgan_endpoint_config)
 
         # Expose endpoint names as properties
-        self.roop_endpoint_name = roop_endpoint.endpoint_name
+        self.inswapper_endpoint_name = inswapper_endpoint.endpoint_name
         self.gfpgan_endpoint_name = gfpgan_endpoint.endpoint_name

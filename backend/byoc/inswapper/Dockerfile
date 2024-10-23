@@ -13,12 +13,14 @@ RUN wget https://bootstrap.pypa.io/get-pip.py && python3 get-pip.py && \
     pip install opencv-python-headless opencv-contrib-python flask gevent gunicorn boto3 && \
     rm -rf /root/.cache
 
-# Clone the roop repository to the home directory and install requirements
-RUN mkdir -p /opt/program/roop && \
-    git clone https://github.com/s0md3v/roop /opt/program/roop && \
-    cd /opt/program/roop && \
-    pip install --no-cache-dir --default-timeout=100 -r requirements.txt
-
+# Clone the GFPGAN repository to the home directory and install requirements
+RUN mkdir -p /opt/program/inswapper && \
+    git clone https://github.com/raphael-shin/inswapper.git /opt/program/inswapper && \
+    cd /opt/program/inswapper && \
+    pip install -r requirements.txt --no-cache-dir && \
+    mkdir checkpoints  && \
+    wget -O ./checkpoints/inswapper_128.onnx https://github.com/facefusion/facefusion-assets/releases/download/models/inswapper_128.onnx
+    
 # Set environment variables
 ENV PYTHONUNBUFFERED=TRUE
 ENV PYTHONDONTWRITEBYTECODE=TRUE
@@ -27,8 +29,11 @@ ENV PATH="/opt/program:${PATH}"
 COPY src /opt/program
 WORKDIR /opt/program
 
+# Grant execution permissions to the script
 RUN chmod +x /opt/program/serve
 
+# SageMaker uses this port by default
 EXPOSE 8080
 
+# Set the entrypoint to run the serve script
 ENTRYPOINT ["serve"]

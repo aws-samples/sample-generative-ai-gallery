@@ -1,6 +1,7 @@
 from flask import Flask, request, jsonify
 import boto3
-import subprocess
+from swapper import process as swapper_process
+from PIL import Image
 import os
 
 app = Flask(__name__)
@@ -66,20 +67,19 @@ def process_images(source_path, target_path, output_path):
 
     os.makedirs(os.path.dirname(output_path), exist_ok=True)
 
-    command = [
-        "python", "/opt/program/roop/run.py",
-        "--execution-provider", "cuda",
-        "--source", source_path,
-        "--target", target_path,
-        "--output", output_path,
-        "--skip-audio"
-    ]
+    # 이미지 열기
+    source_img = Image.open(source_path)
+    target_img = Image.open(target_path)
 
-    print(f"command: {command}")
-    p = subprocess.Popen(command, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, universal_newlines=True)
-    while p.poll() == None:
-        out = p.stdout.readline()
-        print(out, end='')
+    # 모델 경로 설정
+    model_path = "/opt/program/checkpoints/inswapper_128.onnx"
+
+    # process 함수 호출
+    result_image = swapper_process([source_img], target_img, model_path)
+
+    # 결과 이미지 저장
+    os.makedirs(os.path.dirname(output_path), exist_ok=True)
+    result_image.save(output_path)
 
 
 def remove_all_files(source_path, target_path, output_path):

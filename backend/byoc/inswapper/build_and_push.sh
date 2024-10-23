@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 
 # Name of algo -> ECR
-ecr_repo_name=bedrock-x-roop
+ecr_repo_name=bedrock-x-inswapper
 
 #make serve executable
 chmod +x src/serve
@@ -34,4 +34,3 @@ aws ecr get-login-password --region ${region} | docker login --username AWS --pa
 docker tag ${ecr_repo_name} ${fullname}
 
 docker push ${fullname}
-
