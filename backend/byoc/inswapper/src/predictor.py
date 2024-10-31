@@ -64,6 +64,9 @@ def fetch_images(bucket, source_object_key, source_path, target_object_key, targ
 
 def process_images(source_path, target_path, output_path):
     print(f"process_images called")
+    print(f"source_path: {source_path}")
+    print(f"target_path: {target_path}")
+    print(f"output_path: {output_path}")    
 
     os.makedirs(os.path.dirname(output_path), exist_ok=True)
 
@@ -72,10 +75,10 @@ def process_images(source_path, target_path, output_path):
     target_img = Image.open(target_path)
 
     # 모델 경로 설정
-    model_path = "/opt/program/checkpoints/inswapper_128.onnx"
+    model_path = "/opt/program/inswapper/checkpoints/inswapper_128.onnx"
 
     # process 함수 호출
-    result_image = swapper_process([source_img], target_img, model_path)
+    result_image = swapper_process(source_img, target_img, model_path)
 
     # 결과 이미지 저장
     os.makedirs(os.path.dirname(output_path), exist_ok=True)

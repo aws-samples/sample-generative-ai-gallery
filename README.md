@@ -138,4 +138,12 @@ If using cli and CDK, please `cdk destroy`. If not, access [CloudFormation](http
 
 ## License
 
-This library is licensed under the MIT-0 License. See [the LICENSE file](./LICENSE).
+The code of this projects is released under the MIT License. See [the LICENSE file](./LICENSE).
+
+This software utilizes the pre-trained models `inswapper_128.onnx`, which are provided by InsightFace. These models are included under the following conditions:
+
+[From insighface licence](https://github.com/deepinsight/insightface/tree/master/python-package): The InsightFace’s pre-trained models are available for non-commercial research purposes only. 
+
+Users of this software must strictly adhere to these conditions of use. The developers and maintainers of this software are not responsible for any misuse of InsightFace’s pre-trained models.
+
+Please note that if you intend to use this software for any commercial purposes, you will need to train your own models or find models that can be used commercially.

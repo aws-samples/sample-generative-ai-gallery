@@ -66,15 +66,19 @@ def process(source_img: Image.Image,
     
     # load face_swapper
     model_path = os.path.join(os.path.abspath(os.path.dirname(__file__)), model)
+    print(f"model_path: {model_path}")
     face_swapper = getFaceSwapModel(model_path)
+    print("get face_swapper success")
     
     # read images
     source_img = cv2.cvtColor(np.array(source_img), cv2.COLOR_RGB2BGR)
     target_img = cv2.cvtColor(np.array(target_img), cv2.COLOR_RGB2BGR)
-    
+    print("get target_img success")
+
     # detect faces
     source_face = get_one_face(face_analyser, source_img)
     target_face = get_one_face(face_analyser, target_img)
+    print("get target_face success")
 
     if source_face is None:
         raise Exception("No face found in the source image!")

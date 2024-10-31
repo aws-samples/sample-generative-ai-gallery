@@ -46,7 +46,7 @@ class SageMakerEndpointStack(Stack):
             production_variants=[
                 {
                     "initialInstanceCount": 1,
-                    "instanceType": "ml.g6.xlarge",
+                    "instanceType": "ml.g4dn.xlarge",
                     "modelName": inswapper_model.model_name,
                     "variantName": "InswapperVariant"
                 }
@@ -60,7 +60,7 @@ class SageMakerEndpointStack(Stack):
             production_variants=[
                 {
                     "initialInstanceCount": 1,
-                    "instanceType": "ml.g6.xlarge",
+                    "instanceType": "ml.g4dn.xlarge",
                     "modelName": gfpgan_model.model_name,
                     "variantName": "GfpganVariant"
                 }
