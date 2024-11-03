@@ -12,7 +12,7 @@ from constructs import Construct
 from aws_cdk.aws_s3_deployment import BucketDeployment, Source
 
 class ImageProcessingLambdaStack(Stack):
-    def __init__(self, scope: Construct, construct_id: str, inswapper_endpoint_name: str, gfpgan_endpoint_name: str, **kwargs) -> None:
+    def __init__(self, scope: Construct, construct_id: str, facechain_endpoint_name: str, gfpgan_endpoint_name: str, **kwargs) -> None:
         super().__init__(scope, construct_id, **kwargs)
 
         s3_base_bucket_name = self.node.try_get_context("s3_base_bucket_name")
@@ -25,7 +25,7 @@ class ImageProcessingLambdaStack(Stack):
         self.lambda_role = self.create_lambda_role()
         self.bucket = self.create_s3_bucket()
 
-        self.inswapper_lambda = self.create_lambda_function("InswapperLambdaFunction", "lambda/inswapper", inswapper_endpoint_name, self.s3_swapped_face_images_path)
+        self.facechain_lambda = self.create_lambda_function("FaceChainLambdaFunction", "lambda/facechain", facechain_endpoint_name, self.s3_swapped_face_images_path)
         self.gfpgan_lambda = self.create_lambda_function("GfpganLambdaFunction", "lambda/gfpgan", gfpgan_endpoint_name, self.s3_result_images_path)
         self.face_detection_lambda = self.create_face_detection_lambda()
 
@@ -103,7 +103,7 @@ class ImageProcessingLambdaStack(Stack):
     
     def add_s3_event_sources(self):
         self.add_s3_event_source(self.face_detection_lambda, self.s3_face_images_path)
-        self.add_s3_event_source(self.inswapper_lambda, self.s3_masked_face_images_path)
+        self.add_s3_event_source(self.facechain_lambda, self.s3_masked_face_images_path)
         self.add_s3_event_source(self.gfpgan_lambda, self.s3_swapped_face_images_path)
 
     def add_s3_event_source(self, lambda_func, prefix):
@@ -114,7 +114,7 @@ class ImageProcessingLambdaStack(Stack):
 
     def create_outputs(self):
         self.create_lambda_outputs("FaceDetection", self.face_detection_lambda)
-        self.create_lambda_outputs("Inswapper", self.inswapper_lambda)
+        self.create_lambda_outputs("FaceChain", self.facechain_lambda)
         self.create_lambda_outputs("Gfpgan", self.gfpgan_lambda)
 
     def create_lambda_outputs(self, prefix, lambda_func):

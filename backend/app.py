@@ -1,8 +1,8 @@
 #!/usr/bin/env python3
 import aws_cdk as cdk
 
-from stacks.byoc_inswapper_ecr_stack import ByocInswapperEcrStack
-from stacks.byoc_inswapper_codebuild_stack import ByocInswapperCodeBuildStack
+from stacks.byoc_facechain_ecr_stack import ByocFaceChainEcrStack
+from stacks.byoc_facechain_codebuild_stack import ByocFaceChainCodeBuildStack
 from stacks.byoc_gfpgan_ecr_stack import ByocGfpganEcrStack
 from stacks.byoc_gfpgan_codebuild_stack import ByocGfpganCodeBuildStack
 from stacks.codebuild_trigger_stack import CodeBuildTriggerStack
@@ -13,11 +13,11 @@ from stacks.api_gateway_stack import ApiGatewayStack
 
 app = cdk.App()
 
-# Create the ECR repository for BYOC Inswapper stack
-byoc_inswapper_ecr_stack = ByocInswapperEcrStack(app, "ByocInswapperEcrStack")
+# Create the ECR repository for BYOC FaceChain stack
+byoc_facechain_ecr_stack = ByocFaceChainEcrStack(app, "ByocFaceChainEcrStack")
 
-# Create the CodeBuild for BYOC Inswapper stack
-byoc_inswapper_codebuild_stack = ByocInswapperCodeBuildStack(app, "ByocInswapperCodeBuildStack", repository=byoc_inswapper_ecr_stack.repository)
+# Create the CodeBuild for BYOC FaceChain stack
+byoc_facechain_codebuild_stack = ByocFaceChainCodeBuildStack(app, "ByocFaceChainCodeBuildStack", repository=byoc_facechain_ecr_stack.repository)
 
 # Create the ECR repository for BYOC GFPGAN stack
 byoc_gfpgan_ecr_stack = ByocGfpganEcrStack(app, "ByocGfpganEcrStack")
@@ -27,17 +27,17 @@ byoc_gfpgan_codebuild_stack = ByocGfpganCodeBuildStack(app, "ByocGfpganCodeBuild
 
 # Create the CodeBuild Trigger stack
 codebuild_trigger_stack = CodeBuildTriggerStack(app, "CodeBuildTriggerStack",
-                                                inswapper_project_name=byoc_inswapper_codebuild_stack.project.project_name,
+                                                facechain_project_name=byoc_facechain_codebuild_stack.project.project_name,
                                                 gfpgan_project_name=byoc_gfpgan_codebuild_stack.project.project_name)
 
 # Add dependencies
-codebuild_trigger_stack.add_dependency(byoc_inswapper_codebuild_stack)
+codebuild_trigger_stack.add_dependency(byoc_facechain_codebuild_stack)
 codebuild_trigger_stack.add_dependency(byoc_gfpgan_codebuild_stack)
 
-# Create the CodeBuild Status Checker stack
+# Create the CodeBuild Status Checker stacks
 codebuild_status_checker_stack = CodeBuildStatusCheckerStack(app, "CodeBuildStatusCheckerStack",
                                                      codebuild_projects=[
-                                                         byoc_inswapper_codebuild_stack.project.project_name,
+                                                         byoc_facechain_codebuild_stack.project.project_name,
                                                          byoc_gfpgan_codebuild_stack.project.project_name
                                                      ])
 
@@ -46,7 +46,7 @@ codebuild_status_checker_stack.add_dependency(codebuild_trigger_stack)
 
 # Create the SageMaker Endpoint stack
 sagemaker_endpoint_stack = SageMakerEndpointStack(app, "SageMakerEndpointStack",
-                                                  inswapper_image_uri=f"{byoc_inswapper_ecr_stack.repository.repository_uri}:latest",
+                                                  facechain_image_uri=f"{byoc_facechain_ecr_stack.repository.repository_uri}:latest",
                                                   gfpgan_image_uri=f"{byoc_gfpgan_ecr_stack.repository.repository_uri}:latest",
                                                   codebuild_status_resource=codebuild_status_checker_stack.status_resource)
 
@@ -55,7 +55,7 @@ sagemaker_endpoint_stack.add_dependency(codebuild_status_checker_stack)
 
 # Create the Lambda Functions stack
 lambda_functions_stack = ImageProcessingLambdaStack(app, "ImageProcessingLambdaStack",
-                                              inswapper_endpoint_name=sagemaker_endpoint_stack.inswapper_endpoint_name,
+                                              facechain_endpoint_name=sagemaker_endpoint_stack.facechain_endpoint_name,
                                               gfpgan_endpoint_name=sagemaker_endpoint_stack.gfpgan_endpoint_name)
 
 # Add dependency to ensure Lambda Functions are created after the SageMaker Endpoints
