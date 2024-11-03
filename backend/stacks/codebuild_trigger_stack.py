@@ -5,7 +5,7 @@ from aws_cdk import aws_lambda as lambda_
 from constructs import Construct
 
 class CodeBuildTriggerStack(Stack):
-    def __init__(self, scope: Construct, id: str, inswapper_project_name: str, gfpgan_project_name: str, **kwargs) -> None:
+    def __init__(self, scope: Construct, id: str, facechain_project_name: str, gfpgan_project_name: str, **kwargs) -> None:
         super().__init__(scope, id, **kwargs)
 
         # Create a Lambda function to trigger both CodeBuild projects in parallel
@@ -14,7 +14,7 @@ class CodeBuildTriggerStack(Stack):
             handler="index.handler",
             code=lambda_.Code.from_asset("lambda/codebuild"),
             environment={
-                "INSWAPPER_PROJECT_NAME": inswapper_project_name,
+                "FACECHAIN_PROJECT_NAME": facechain_project_name,
                 "GFPGAN_PROJECT_NAME": gfpgan_project_name
             }
         )

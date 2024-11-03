@@ -1,0 +1,40 @@
+# Base image
+# ARG ECR_REGISTRY
+# ARG ECR_REPOSITORY
+# ARG IMAGE_TAG
+FROM 763104351884.dkr.ecr.us-west-2.amazonaws.com/huggingface-pytorch-inference:1.13.1-transformers4.26.0-gpu-py39-cu117-ubuntu20.04
+
+# Install necessary packages
+RUN apt-get update && \
+    apt-get install -y sudo wget git xz-utils nginx ca-certificates libsm6 libxext6 ffmpeg libfontconfig1 libxrender1 libgl1-mesa-glx && \
+    rm -rf /var/lib/apt/lists/*
+
+SHELL ["/bin/bash", "-c"]
+
+RUN conda create -n fast-chain python=3.8.16 && \
+    source activate fast-chain && \
+    pip install torch torchvision torchaudio --index-url https://download.pytorch.org/whl/cu117 && \
+    pip install mmcv-full -f https://download.openmmlab.com/mmcv/dist/cu117/torch2.0/index.html
+
+RUN mkdir -p /opt/program/facefusion && \
+    git clone https://github.com/raphael-shin/facechain.git /opt/program/facefusion && \
+    cd /opt/program/facefusion && \
+    pip install -r requirements.txt --no-cache-dir && \
+    python download_models.py
+    
+# Set environment variables
+ENV PYTHONUNBUFFERED=TRUE
+ENV PYTHONDONTWRITEBYTECODE=TRUE
+ENV PATH="/opt/program:${PATH}"
+
+COPY src /opt/program
+WORKDIR /opt/program
+
+# Grant execution permissions to the script
+RUN chmod +x /opt/program/serve
+
+# SageMaker uses this port by default
+EXPOSE 8080
+
+# Set the entrypoint to run the serve script
+ENTRYPOINT ["serve"]

@@ -1,11 +1,10 @@
 from aws_cdk import Stack, CustomResource
 from aws_cdk import aws_sagemaker as sagemaker
 from aws_cdk import aws_iam as iam
-from aws_cdk import aws_s3 as s3
 from constructs import Construct
 
 class SageMakerEndpointStack(Stack):
-    def __init__(self, scope: Construct, construct_id: str, inswapper_image_uri: str, gfpgan_image_uri: str, codebuild_status_resource: CustomResource, **kwargs) -> None:
+    def __init__(self, scope: Construct, construct_id: str, facechain_image_uri: str, gfpgan_image_uri: str, codebuild_status_resource: CustomResource, **kwargs) -> None:
         super().__init__(scope, construct_id, **kwargs)
 
         # Add a dependency on the CodeBuild status resource
@@ -21,14 +20,14 @@ class SageMakerEndpointStack(Stack):
             ]
         )
 
-        # Create SageMaker Model for Inswapper
-        inswapper_model = sagemaker.CfnModel(self, "InswapperModel",
+        # Create SageMaker Model for FaceChain
+        facechain_model = sagemaker.CfnModel(self, "FaceChainModel",
             execution_role_arn=sagemaker_role.role_arn,
             primary_container={
-                "image": inswapper_image_uri,
+                "image": facechain_image_uri,
                 "mode": "SingleModel"
             },
-            model_name="inswapper-model"
+            model_name="facechain-model"
         )
 
         # Create SageMaker Model for GFPGAN
@@ -41,26 +40,26 @@ class SageMakerEndpointStack(Stack):
             model_name="gfpgan-model"
         )
 
-        # Create SageMaker Endpoint Configuration for Inswapper
-        inswapper_endpoint_config = sagemaker.CfnEndpointConfig(self, "InswapperEndpointConfig",
+        # Create SageMaker Endpoint Configuration for FaceChain
+        facechain_endpoint_config = sagemaker.CfnEndpointConfig(self, "FaceChainEndpointConfig",
             production_variants=[
                 {
                     "initialInstanceCount": 1,
-                    "instanceType": "ml.g4dn.xlarge",
-                    "modelName": inswapper_model.model_name,
-                    "variantName": "InswapperVariant"
+                    "instanceType": "ml.g5.xlarge",
+                    "modelName": facechain_model.model_name,
+                    "variantName": "FaceChainVariant"
                 }
             ],
-            endpoint_config_name="inswapper-endpoint-config"
+            endpoint_config_name="facechain-endpoint-config"
         )
-        inswapper_endpoint_config.add_dependency(inswapper_model)
+        facechain_endpoint_config.add_dependency(facechain_model)
 
         # Create SageMaker Endpoint Configuration for GFPGAN
         gfpgan_endpoint_config = sagemaker.CfnEndpointConfig(self, "GfpganEndpointConfig",
             production_variants=[
                 {
                     "initialInstanceCount": 1,
-                    "instanceType": "ml.g4dn.xlarge",
+                    "instanceType": "ml.g5.xlarge",
                     "modelName": gfpgan_model.model_name,
                     "variantName": "GfpganVariant"
                 }
@@ -69,12 +68,12 @@ class SageMakerEndpointStack(Stack):
         )
         gfpgan_endpoint_config.add_dependency(gfpgan_model)
 
-        # Create SageMaker Endpoint for Inswapper
-        inswapper_endpoint = sagemaker.CfnEndpoint(self, "InswapperEndpoint",
-            endpoint_config_name=inswapper_endpoint_config.endpoint_config_name,
-            endpoint_name="inswapper-endpoint"
+        # Create SageMaker Endpoint for FaceChain
+        facechain_endpoint = sagemaker.CfnEndpoint(self, "FaceChainEndpoint",
+            endpoint_config_name=facechain_endpoint_config.endpoint_config_name,
+            endpoint_name="facechain-endpoint"
         )
-        inswapper_endpoint.add_dependency(inswapper_endpoint_config)
+        facechain_endpoint.add_dependency(facechain_endpoint_config)
 
         # Create SageMaker Endpoint for GFPGAN
         gfpgan_endpoint = sagemaker.CfnEndpoint(self, "GfpganEndpoint",
@@ -84,5 +83,5 @@ class SageMakerEndpointStack(Stack):
         gfpgan_endpoint.add_dependency(gfpgan_endpoint_config)
 
         # Expose endpoint names as properties
-        self.inswapper_endpoint_name = inswapper_endpoint.endpoint_name
+        self.facechain_endpoint_name = facechain_endpoint.endpoint_name
         self.gfpgan_endpoint_name = gfpgan_endpoint.endpoint_name
