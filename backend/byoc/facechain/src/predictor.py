@@ -71,9 +71,9 @@ def process_images(source_path, target_path, output_path):
 
     command = [
         "python", "/opt/program/facefusion/swap.py",
-        "-s", source_path,
-        "-t", target_path,
-        "-o", output_path
+        "-u", source_path, # user image
+        "-t", target_path, # template image
+        "-o", output_path # output image
     ]
 
     print(f"command: {command}")

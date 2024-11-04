@@ -9,21 +9,26 @@ RUN apt-get update && \
     apt-get install -y sudo wget git xz-utils nginx ca-certificates libsm6 libxext6 ffmpeg libfontconfig1 libxrender1 libgl1-mesa-glx && \
     rm -rf /var/lib/apt/lists/*
 
-SHELL ["/bin/bash", "-c"]
+# Create new environment with specific Python version
+RUN conda create -n py38 python=3.8.16 pip -y && \
+    conda clean -ya
 
-RUN conda create -n fast-chain python=3.8.16 && \
-    source activate fast-chain
+# Set PATH to use Python 3.8 by default
+ENV PATH=/opt/conda/envs/py38/bin:$PATH
 
+# Install dependencies using the Python 3.8 environment
 RUN pip install torch torchvision torchaudio --index-url https://download.pytorch.org/whl/cu117 && \
-    pip install mmcv-full -f https://download.openmmlab.com/mmcv/dist/cu117/torch2.0/index.html
-
-RUN mkdir -p /opt/program/facefusion && \
+    pip install flask gevent gunicorn boto3 && \
+    pip install mmcv-full -f https://download.openmmlab.com/mmcv/dist/cu117/torch2.0/index.html && \
+    mkdir -p /opt/program/facefusion && \
     git clone https://github.com/raphael-shin/facechain.git /opt/program/facefusion && \
     cd /opt/program/facefusion && \
-    pip install -r requirements.txt --no-cache-directory
+    pip install -r requirements.txt --no-cache-dir
 
-RUN python download_models.py
-    
+# Verify Python version
+RUN echo "Python version:" && python --version && \
+    echo "Python path:" && which python
+
 # Set environment variables
 ENV PYTHONUNBUFFERED=TRUE
 ENV PYTHONDONTWRITEBYTECODE=TRUE
@@ -39,4 +44,4 @@ RUN chmod +x /opt/program/serve
 EXPOSE 8080
 
 # Set the entrypoint to run the serve script
-ENTRYPOINT ["serve"]
+ENTRYPOINT ["python", "/opt/program/serve"]

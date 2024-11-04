@@ -67,4 +67,9 @@ def start_server():
 # The main routine to invoke the start function.
 
 if __name__ == '__main__':
+     # Download required models before starting the server
+    print('Downloading required models...')
+    
+    subprocess.check_call(['python', '/opt/program/facefusion/download_models.py'])
+    
     start_server()
