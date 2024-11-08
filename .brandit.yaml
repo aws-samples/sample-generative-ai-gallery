@@ -1,0 +1,8 @@
+exclude_dirs: ['frontend', 'node_modules', 'docs', 'backend/.venv']
+skips: [
+  'B101', # assert used
+  'B110', # except_pass
+  'B308', # mark_safe
+  'B703', # django_mark_safe
+  'B112' # except_continue
+]
