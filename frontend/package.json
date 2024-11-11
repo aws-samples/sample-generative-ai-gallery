@@ -73,8 +73,10 @@
     "outputName": "coverage/junit.xml"
   },
   "overrides": {
-    "webpack": "5.82.1",
-    "@babel/core": "7.21.8"
+    "webpack": "5.94.0",
+    "@babel/core": "7.21.8",
+    "postcss": ">=8.4.31",
+    "nth-check": ">=2.0.2"
   },
   "type": "module"
 }
