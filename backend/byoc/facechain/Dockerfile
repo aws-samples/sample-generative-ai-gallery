@@ -33,6 +33,7 @@ RUN echo "Python version:" && python --version && \
 ENV PYTHONUNBUFFERED=TRUE
 ENV PYTHONDONTWRITEBYTECODE=TRUE
 ENV PATH="/opt/program:${PATH}"
+ENV PYTHONPATH="${PYTHONPATH}:/opt/program/facefusion"
 
 COPY src /opt/program
 WORKDIR /opt/program

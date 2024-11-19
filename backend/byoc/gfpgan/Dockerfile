@@ -27,6 +27,7 @@ RUN mkdir -p /opt/program/GFPGAN && \
 ENV PYTHONUNBUFFERED=TRUE
 ENV PYTHONDONTWRITEBYTECODE=TRUE
 ENV PATH="/opt/program:${PATH}"
+ENV PYTHONPATH="${PYTHONPATH}:/opt/program/GFPGAN"
 
 COPY src /opt/program
 WORKDIR /opt/program

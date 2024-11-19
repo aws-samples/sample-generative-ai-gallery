@@ -2,10 +2,39 @@ from flask import Flask, request, jsonify
 import boto3
 import subprocess
 import os
+import cv2
+import argparse
+from modelscope.outputs import OutputKeys
+from modelscope.pipelines import pipeline
 
 app = Flask(__name__)
 s3_client = boto3.client('s3')
 
+IMAGE_FACE_FUSION = pipeline('face_fusion_torch',
+                                model='damo/cv_unet_face_fusion_torch', 
+                                model_revision='v1.0.3')
+
+def face_fusion(user_path, template_path, output_path):               
+    result = IMAGE_FACE_FUSION(dict(template=template_path, user=user_path))
+    print(f"face_fusion result: {result}")
+    
+    # 출력 디렉토리 생성
+    os.makedirs(os.path.dirname(output_path), exist_ok=True)
+    
+    # 디버깅을 위한 추가 정보 출력
+    output_img = result[OutputKeys.OUTPUT_IMG]
+    print(f"Output image shape: {output_img.shape}")
+    print(f"Output image dtype: {output_img.dtype}")
+    print(f"Output path permissions: {oct(os.stat(os.path.dirname(output_path)).st_mode)[-3:]}")
+    
+    # 이미지 저장 시도 및 결과 확인
+    success = cv2.imwrite(output_path, output_img)
+    print(f"cv2.imwrite success: {success}")
+    
+    # 파일이 실제로 생성되었는지 확인
+    if not os.path.exists(output_path):
+        raise RuntimeError(f"Image file was not created at {output_path}")
+    print(f"output_path size: {os.path.getsize(output_path)}")
 
 @app.route('/ping', methods=['GET'])
 def ping():
@@ -23,17 +52,20 @@ def invocations():
     source_object_key = input_data['source']
     target_object_key = input_data['target']
     output_object_key = input_data['output']
-    source_path = f"/opt/workspace/source/{uuid}.png"
-    target_path = f"/opt/workspace/target/{uuid}.png"
-    output_path = f"/opt/workspace/output/{uuid}.png"
+    source_path = f"/opt/program/workspace/source/{uuid}.png"
+    target_path = f"/opt/program/workspace/target/{uuid}.png"
+    output_path = f"/opt/program/workspace/output/{uuid}.png"
 
     fetch_images(bucket, source_object_key, source_path, target_object_key, target_path)
 
     process_images(source_path, target_path, output_path)
+    print("process_images finished")
 
     s3_client.upload_file(output_path, bucket, output_object_key)
+    print("upload_file finished")
 
     remove_all_files(source_path, target_path, output_path)
+    print("remove_all_files finished")
 
     return jsonify(input_data)
 
@@ -65,22 +97,8 @@ def process_images(source_path, target_path, output_path):
     print(f"process_images called")
     print(f"source_path: {source_path}")
     print(f"target_path: {target_path}")
-    print(f"output_path: {output_path}")    
-
-    os.makedirs(os.path.dirname(output_path), exist_ok=True)
-
-    command = [
-        "python", "/opt/program/facefusion/swap.py",
-        "-u", source_path, # user image
-        "-t", target_path, # template image
-        "-o", output_path # output image
-    ]
-
-    print(f"command: {command}")
-    p = subprocess.Popen(command, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, universal_newlines=True)
-    while p.poll() == None:
-        out = p.stdout.readline()
-        print(out, end='')
+    print(f"output_path: {output_path}")
+    face_fusion(source_path, target_path, output_path)
 
 
 def remove_all_files(source_path, target_path, output_path):

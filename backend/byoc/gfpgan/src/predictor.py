@@ -1,7 +1,7 @@
 from flask import Flask, request, jsonify
 import boto3
-import subprocess
 import os
+from restore import restore_face
 
 app = Flask(__name__)
 s3_client = boto3.client('s3')
@@ -52,26 +52,15 @@ def fetch_images(bucket, source_object_key, source_path):
 
 
 def process_images(source_path, output_path):
-    print(f"process_images called")
-
     os.makedirs(os.path.dirname(output_path), exist_ok=True)
-
-    command = [
-        "python", "/opt/program/GFPGAN/inference_gfpgan.py",
-        "-i", source_path,
-        "-o", output_path
-    ]
-
-    print(f"command: {command}")
-    p = subprocess.Popen(command, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, universal_newlines=True)
-    while p.poll() == None:
-        out = p.stdout.readline()
-        print(out, end='')
+    restore_face(source_path, output_path)
+    print(f"process_images success")
 
 
 def remove_all_files(source_path, output_path):
     os.remove(source_path)
     os.remove(output_path)
+    print(f"remove_all_files success")
 
 
 def get_s3_image(s3_bucket, object_key):

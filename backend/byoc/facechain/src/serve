@@ -22,7 +22,8 @@ import sys
 cpu_count = multiprocessing.cpu_count()
 
 model_server_timeout = os.environ.get('MODEL_SERVER_TIMEOUT', 60)
-model_server_workers = int(os.environ.get('MODEL_SERVER_WORKERS', cpu_count))
+# model_server_workers = int(os.environ.get('MODEL_SERVER_WORKERS', cpu_count))
+model_server_workers = 1
 
 def sigterm_handler(nginx_pid, gunicorn_pid):
     try:
@@ -67,9 +68,4 @@ def start_server():
 # The main routine to invoke the start function.
 
 if __name__ == '__main__':
-     # Download required models before starting the server
-    print('Downloading required models...')
-    
-    subprocess.check_call(['python', '/opt/program/facefusion/download_models.py'])
-    
     start_server()
