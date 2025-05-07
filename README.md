@@ -8,13 +8,13 @@ This showcase demonstrates the integration of various AWS AI services for creati
 
 ## Architecture
 
-![](./docs/images/genai-gallery-architecture-v1.jpg)
+![](./docs/images/genai-gallery-architecture-v2.png)
 
 Key Components:
 
 - [AWS Amplify](https://aws.amazon.com/amplify/): Provides frontend application hosting (using React).
 - [Amazon API Gateway](https://aws.amazon.com/api-gateway/) + [AWS Lambda](https://aws.amazon.com/lambda/): Used as backend API endpoints for image retrieval and upload.
-- [Amazon Bedrock](https://aws.amazon.com/bedrock/): A managed service that utilizes foundation models through APIs. It uses the Amazon Titan Image Generator model for image generation and the Claude 3.0 Sonnet model for descriptions.
+- [Amazon Bedrock](https://aws.amazon.com/bedrock/): A managed service that utilizes foundation models through APIs. It uses the Amazon Nova Canvas model for image generation and the Claude 3.5 Sonnet v2 model for descriptions.
 - [Amazon SageMaker](https://aws.amazon.com/sagemaker/): Deploys the necessary model as an Endpoint to process image synthesis requests.
 - [Amazon Rekognition](https://aws.amazon.com/rekognition/): Detects faces in images and videos, and crops the relevant facial areas.
 
