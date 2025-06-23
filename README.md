@@ -1,145 +1,214 @@
-# GenAI Gallery
+# Global Summit 2025 - AI Image Gallery Project
 
-![](./docs/images/sample.jpg)
+This repository contains three interconnected projects that together form an AI-powered image gallery application:
 
-This repository is a sample project that utilizes [Amazon Bedrock](https://aws.amazon.com/bedrock/) for generative AI, to create images of historical figures. It then uses a SageMaker Endpoint to synthesize these images with users' selfie photos, producing composite results. 
+1. **gallery-backend**: Backend infrastructure and APIs
+2. **gallery-frontend**: User interface and frontend application
+3. **image-generator**: AI-based image generation utility
 
-This showcase demonstrates the integration of various AWS AI services for creative image generation and manipulation.
+## Project Overview
 
-## Architecture
+### Gallery Backend
 
-![](./docs/images/genai-gallery-architecture-v2.png)
+The backend infrastructure is built using AWS CDK and provides the foundation for the entire application. It consists of several key components:
 
-Key Components:
+- **API Gateway**: RESTful endpoints for image upload, retrieval, and user agreement management
+- **AWS Cognito**: User authentication and authorization
+- **DynamoDB**: Data storage for image processing status, display information, and user agreements
+- **Lambda Functions**: Serverless processing for image manipulation and business logic
+- **S3 Buckets**: Object storage for images and assets
+- **SageMaker Endpoints**: AI model deployment for FaceChain and GFPGAN
+- **Container Infrastructure**: ECR repositories and CodeBuild pipelines for AI model containers
 
-- [AWS Amplify](https://aws.amazon.com/amplify/): Provides frontend application hosting (using React).
-- [Amazon API Gateway](https://aws.amazon.com/api-gateway/) + [AWS Lambda](https://aws.amazon.com/lambda/): Used as backend API endpoints for image retrieval and upload.
-- [Amazon Bedrock](https://aws.amazon.com/bedrock/): A managed service that utilizes foundation models through APIs. It uses the Amazon Nova Canvas model for image generation and the Claude 3.5 Sonnet v2 model for descriptions.
-- [Amazon SageMaker](https://aws.amazon.com/sagemaker/): Deploys the necessary model as an Endpoint to process image synthesis requests.
-- [Amazon Rekognition](https://aws.amazon.com/rekognition/): Detects faces in images and videos, and crops the relevant facial areas.
+The backend handles all data processing, storage, and AI model integration, providing a robust foundation for the application.
 
-## Deploy
+### Gallery Frontend
 
-> [!Important]
-> - You have installed the latest version of [AWS CDK](https://docs.aws.amazon.com/cdk/latest/guide/getting_started.html)
-> - You have an [AWS account](https://aws.amazon.com/free/)
-> - You have the necessary permissions to create and manage AWS resources
-> - You must use a region where [Amazon Bedrock is supported](https://docs.aws.amazon.com/bedrock/latest/userguide/bedrock-regions.html).
+The frontend is a React TypeScript application that provides the user interface for the gallery service. Key features include:
 
-### Prerequisites
+- User authentication with AWS Cognito
+- Image upload and processing
+- Face detection and manipulation
+- AI-powered face swapping
+- Multi-language support (i18n)
+- User agreement management
+- QR code generation for sharing
 
-1. Clone the repository:
-    ```
-    https://github.com/aws-samples/sample-generative-ai-gallery.git
-    ```
+The frontend communicates with the backend APIs to provide a seamless user experience for image processing and management.
 
-### Step 1: Deploy Backend
+### Image Generator
 
-1. Move backend directory:
-    ```
-    cd backend
-   ```
+The image generator is a Python-based utility that leverages Amazon Bedrock to create AI-generated images. It includes:
 
-2. Create a virtual environment:
-    ```
-    python3 -m venv .venv
-    source .venv/bin/activate
-   ```
+- Integration with Amazon Bedrock's Nova Canvas model for image generation
+- Claude 3.5 Sonnet for text processing and prompt engineering
+- Configuration for various image styles, historical periods, and attributes
+- S3 integration for storing generated images
+- DynamoDB integration for tracking image metadata
 
-3. Install the required dependencies:
-    ```
-    pip install -r requirements.txt
-    ```
+This component allows the application to generate high-quality base images that can be used in the face swapping process.
 
-4. Configure your AWS credentials:
-    ```
-    aws configure
-    ```
+## Amazon Bedrock Model Access Setup
 
-5. Prepare deploy CDK:
-    ```
-    cdk bootstrap aws://<account id>/<your-aws-region>
-    ```
+Before using the image generator, you need to set up access to the required Amazon Bedrock models:
 
-6. Update the `cdk.context.json` file with your aws region, and other configuration details.
-    ```
-    {
-        "s3_base_bucket_name": "genai-gallery",
-        "s3_base_images_path": "images/base/",
-        "s3_face_images_path": "images/face/",
-        "s3_masked_face_images_path": "images/masked-face/",
-        "s3_swapped_face_images_path": "images/swapped-face/",
-        "s3_result_images_path": "images/result/",
-        "pillow_layer_arn": "arn:aws:lambda:{your-aws-region}:770693421928:layer:Klayers-p38-Pillow:10",
-        "numpy_layer_arn": "arn:aws:lambda:{your-aws-region}:770693421928:layer:Klayers-p38-numpy:13"
-    }
-    ```
+### 1. Access AWS Bedrock Console
 
-6. Deploy CDK stacks:
-    ```
-    cdk deploy --require-approval never --all
-    ```
+1. Sign in to the AWS Bedrock console: https://console.aws.amazon.com/bedrock/
+2. Set the region to `us-east-1` (Nova Canvas model is only available in us-east-1)
 
-### Step 2: Run Frontend Application
+### 2. Request Model Access
 
-1. If step 1 is completed successfully, You will receive output similar to the following. The URL of the Amazon API Gateway Endpoint will be output to `ApiGatewayStack.ApiGatewayUrl`, so record that address and use it for frontend deployment.
-    ```
-    ✅  ApiGatewayStack
+1. In the left navigation pane, under **Bedrock configurations**, choose **Model access**
+2. Choose **Modify model access**
+3. Select the following models:
+   - Anthropic Claude 3.5 Sonnet
+   - Amazon Nova Canvas
+4. Choose **Next**
+5. For Anthropic models, you must submit use case details
+6. Review and accept the terms, then choose **Submit**
 
-    ✨  Deployment time: 68.13s
+### 3. IAM Permissions Setup
 
-    Outputs:
-    ApiGatewayStack.GenAIGalleryImageApiEndpoint2DF4C2F5 = https://xxxxx.execute-api.us-east-1.amazonaws.com/prod/
-    ApiGatewayStack.ApiGatewayUrl = https://xxxxx.execute-api.us-east-1.amazonaws.com/prod/
-    Stack ARN:
-    arn:aws:cloudformation:us-east-1:xxxxx:stack/ApiGatewayStack/14bb1380-4566-11ef-ac05-0e7a94e90b7d
-    ```
+To request model access, your IAM role needs the following permissions:
 
-3. In the `.env` file of the frontend folder, replace the `{your backend Amazon API Gateway endpoint url}` part of `REACT_APP_API_ENDPOINT={your backend Amazon API Gateway endpoint url}` with the API Gateway Endpoint URL mentioned above.
-    ```
-    REACT_APP_API_ENDPOINT=https://xxxxx.execute-api.us-east-1.amazonaws.com/prod/
-    ```
+```json
+{
+    "Version": "2012-10-17",
+    "Statement": [
+        {
+            "Effect": "Allow",
+            "Action": [
+                "aws-marketplace:Subscribe",
+                "aws-marketplace:Unsubscribe",
+                "aws-marketplace:ViewSubscriptions"
+            ],
+            "Resource": "*"
+        }
+    ]
+}
+```
 
-4. If you were in the backend directory, move to the frontend directory using the command below.
-    ```
-    cd ../frontend
-    ```
+### 4. S3 Bucket Access Setup
 
-5. Install the required dependencies:
-    ```
-    npm install
-    ```
+To allow the image generator to save images to S3, you need to configure proper IAM permissions:
 
-6. Run the application using the command below:
-    ```
-    npm start
-    ```
+1. Go to AWS IAM Console: https://console.aws.amazon.com/iam/
+2. Create a new IAM policy with the following permissions:
 
-### Remove resources
+```json
+{
+    "Version": "2012-10-17",
+    "Statement": [
+        {
+            "Effect": "Allow",
+            "Action": [
+                "s3:PutObject",
+                "s3:GetObject",
+                "s3:ListBucket"
+            ],
+            "Resource": [
+                "arn:aws:s3:::amazon-bedrock-gallery-sydney-jungseob",
+                "arn:aws:s3:::amazon-bedrock-gallery-sydney-jungseob/*"
+            ]
+        }
+    ]
+}
+```
 
-> [!Important]
-> Please be mindful of the costs for all deployed resources. Make sure to delete resources after you are finished using them.
+3. Attach this policy to the IAM role/user that will be used to run the image generator
+4. Make sure the S3 bucket name in the policy matches your actual bucket name
 
-If using cli and CDK, please `cdk destroy`. If not, access [CloudFormation](https://console.aws.amazon.com/cloudformation/home) and then delete all stacks manually.
+### Important Notes
 
-## Contacts
+- Nova Canvas model is only available in `us-east-1` region
+- Model access approval may take several minutes
+- If model access is denied, contact AWS support or choose alternative models
 
-- [Chulwoo Choi](https://github.com/prorhap)
-- [Jinwoo Park](https://github.com/jinuland)
-- [Jungseob Shin](https://github.com/raphael-shin)
-- [Seongjin Ahn](https://github.com/tjdwlsdlaek)
-- [Kihoon Kwon](https://github.com/kyoonkwon)
-- [Jisoo Min](https://github.com/Jisoo-Min)
-- [Hyeryeong Joo](https://github.com/HyeryeongJoo)
+## Deployment Instructions
 
-## Contributors
+Follow these steps to deploy the complete application:
 
-[![genai-gallery contributors](https://contrib.rocks/image?repo=raphael-shin/my-aws-cdk-sample&max=1000)](https://github.com/raphael-shin/my-aws-cdk-sample/graphs/contributors)
+### 1. Deploy Gallery Backend
 
-## License
+First, deploy the backend infrastructure:
 
-The code of this projects is released under the MIT License. See [the LICENSE file](./LICENSE).
+```bash
+cd gallery-backend
+python3 -m venv .venv
+source .venv/bin/activate
+pip install -r requirements.txt
 
-This software utilizes the [pre-trained models](https://github.com/modelscope/facechain). Users of this software must strictly adhere to these conditions of use. 
+# Generate unique ID and update cdk.context.json
+UNIQUE_ID=$(openssl rand -hex 4)
+sed -i '' "s/<your-unique-id>/$UNIQUE_ID/g" cdk.context.json
 
-Please note that if you intend to use this software for any commercial purposes, you will need to train your own models or find models that can be used commercially.
+cdk synth
+cdk deploy --all
+```
+
+This will create all necessary AWS resources including API Gateway, Lambda functions, DynamoDB tables, S3 buckets, and SageMaker endpoints.
+
+### 2. Generate Base Images
+
+After the backend is deployed, use the image generator to create base images:
+
+```bash
+cd ../image-generator
+pip install -r requirements.txt
+python generate_image.py
+```
+
+This will generate images using Amazon Bedrock and store them in the configured S3 bucket, making them available for the face swapping process.
+
+### 3. Deploy Gallery Frontend
+
+Finally, deploy the frontend application:
+
+```bash
+cd ../gallery-frontend
+npm install
+# Update .env file with your backend API endpoints
+npm run build:prod
+# Deploy the build directory to your hosting service of choice
+```
+
+## Testing the Application
+
+Once all components are deployed, you can test the complete workflow:
+
+1. Access the frontend application
+2. Create an account and sign in
+3. Upload a photo for face swapping
+4. Select a base image generated by the image generator
+5. Process the image using the AI models deployed in the backend
+6. View and share your generated images
+
+## Architecture Diagram
+
+```
+┌─────────────────┐     ┌─────────────────┐     ┌─────────────────┐
+│                 │     │                 │     │                 │
+│ Gallery Frontend│────▶│  Gallery Backend│◀────│ Image Generator │
+│                 │     │                 │     │                 │
+└─────────────────┘     └─────────────────┘     └─────────────────┘
+        │                       │                       │
+        ▼                       ▼                       ▼
+┌─────────────────────────────────────────────────────────────────┐
+│                                                                 │
+│                       AWS Infrastructure                        │
+│                                                                 │
+└─────────────────────────────────────────────────────────────────┘
+```
+
+## Requirements
+
+- AWS Account with appropriate permissions
+- Node.js v14 or higher
+- Python 3.8 or higher
+- AWS CDK installed and configured
+- AWS CLI installed and configured
+
+## Contributing
+
+Please refer to the individual project READMEs for specific contribution guidelines.
