@@ -238,6 +238,132 @@ tail -f logs/image-generator.log
 - Consider using reserved instances
 - Monitor CloudWatch costs
 
+## Monthly Cost Estimation
+
+### AWS Service Costs
+
+#### Amazon Bedrock
+- **Nova Canvas**: $0.08 per image (1024x1024 resolution)
+- **Claude 3.5 Sonnet**: $0.003 per 1K input tokens, $0.015 per 1K output tokens
+- **Estimated monthly cost for 100 images**: $8-12
+
+#### Amazon SageMaker (GPU Instances)
+- **Combined FaceChain + GFPGAN Endpoint**: ml.g4dn.xlarge - $0.736 per hour
+- **Monthly GPU cost (24/7)**: $529.92
+
+#### Amazon S3
+- **Storage**: $0.023 per GB per month
+- **Data transfer**: $0.09 per GB (outbound)
+- **Estimated monthly cost for 1GB storage**: $0.02-0.10
+
+#### Amazon DynamoDB
+- **Read/Write capacity**: $0.25 per RCU, $1.25 per WCU
+- **Storage**: $0.25 per GB per month
+- **Estimated monthly cost for light usage**: $5-15
+
+#### AWS Lambda
+- **Compute time**: $0.20 per 1M requests, $0.0000166667 per GB-second
+- **Estimated monthly cost for 1000 invocations**: $1-5
+
+#### CloudWatch Logs
+- **Ingestion**: $0.50 per GB
+- **Storage**: $0.03 per GB per month
+- **Estimated monthly cost**: $2-8
+
+#### Amazon API Gateway
+- **REST API**: $3.50 per million API calls
+- **Data transfer**: $0.09 per GB
+- **Estimated monthly cost for 10K requests**: $0.04-0.10
+
+#### AWS Cognito
+- **MAU (Monthly Active Users)**: $0.0055 per MAU
+- **Estimated monthly cost for 100 users**: $0.55
+
+### Usage Scenarios
+
+#### Light Usage (50 images/month, 8 hours/day GPU usage)
+- **Total estimated cost**: $550-650/month
+- **Breakdown**:
+  - Bedrock: $4-6
+  - SageMaker GPU: $176-235 (8 hours/day)
+  - S3: $0.01-0.05
+  - DynamoDB: $3-8
+  - Lambda: $0.5-2
+  - CloudWatch: $1-3
+  - API Gateway: $0.04-0.10
+  - Cognito: $0.55
+
+#### Medium Usage (200 images/month, 16 hours/day GPU usage)
+- **Total estimated cost**: $650-850/month
+- **Breakdown**:
+  - Bedrock: $16-24
+  - SageMaker GPU: $353-471 (16 hours/day)
+  - S3: $0.05-0.20
+  - DynamoDB: $8-20
+  - Lambda: $2-8
+  - CloudWatch: $3-10
+  - API Gateway: $0.04-0.10
+  - Cognito: $0.55
+
+#### Heavy Usage (500 images/month, 24/7 GPU usage)
+- **Total estimated cost**: $750-950/month
+- **Breakdown**:
+  - Bedrock: $40-60
+  - SageMaker GPU: $529.92 (24/7)
+  - S3: $0.10-0.50
+  - DynamoDB: $15-35
+  - Lambda: $5-15
+  - CloudWatch: $5-15
+  - API Gateway: $0.04-0.10
+  - Cognito: $0.55
+
+### Cost Optimization Tips
+
+1. **GPU Instance Management**: 
+   - Use auto-scaling to scale down during low usage periods
+   - Consider using Spot instances for non-critical workloads
+   - Implement automatic shutdown during off-hours
+
+2. **Batch Processing**: Generate multiple images in a single session to reduce API calls
+3. **Image Resolution**: Use appropriate resolution for your needs (lower resolution = lower cost)
+4. **Storage Management**: Regularly clean up unused images from S3
+5. **DynamoDB Optimization**: Use on-demand capacity for variable workloads
+6. **Lambda Optimization**: Optimize function execution time and memory allocation
+
+### GPU Instance Cost Breakdown
+
+#### ml.g4dn.xlarge Specifications
+- **vCPUs**: 4
+- **Memory**: 16 GB
+- **GPU**: 1x NVIDIA T4
+- **Storage**: 125 GB NVMe SSD
+- **Hourly Cost**: $0.736
+- **Daily Cost (24 hours)**: $17.664
+- **Monthly Cost (30 days)**: $529.92
+- **Note**: Single instance hosts both FaceChain and GFPGAN models
+
+#### Cost Optimization for GPU Instances
+- **Auto-scaling**: Scale to 0 instances during off-hours
+- **Spot Instances**: Up to 90% cost savings (if available)
+- **Reserved Instances**: 1-year or 3-year commitment for 30-60% savings
+- **Scheduled Scaling**: Automatically start/stop based on usage patterns
+
+### Free Tier Considerations
+
+- **AWS Lambda**: 1M free requests per month
+- **Amazon S3**: 5GB storage for 12 months
+- **Amazon DynamoDB**: 25GB storage and 25 WCU/25 RCU for 12 months
+- **CloudWatch Logs**: 5GB data ingestion and 5GB data archive for 12 months
+- **Amazon API Gateway**: 1M API calls per month for 12 months
+- **AWS Cognito**: 50,000 MAUs for 12 months
+
+> **Note**: 
+> - Prices are based on US East (N. Virginia) region as of 2024
+> - GPU costs are the largest component due to SageMaker endpoints running 24/7
+> - Consider implementing auto-scaling to reduce GPU costs during low usage periods
+> - Actual costs may vary based on usage patterns, region, and AWS pricing changes
+> - Always check the latest AWS pricing for accurate estimates
+
 ## License
 
 This project is released under the MIT License.
