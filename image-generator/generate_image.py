@@ -58,6 +58,12 @@ class ImageGenerator:
         """Generate a prompt using Claude model."""
         user_prompt = f"""
         Generate a portrait-mode self-portrait concept based on these variables:
+	Male should not have ear rings
+	Generate image with less wrinkles on face
+	Generate a bit younger looking Image
+	Female should not have moustache
+	Generate Rajasthani images
+
 
         Historical Period: {historical_period}
         Gender: {gender}
@@ -409,7 +415,7 @@ def main():
         config = AppConfig()
         
         # Number of images to generate per combination
-        min_images_per_combination = 1
+        min_images_per_combination = 2
         
         # Optional: Start from specific combination
         start_from = {
@@ -429,4 +435,5 @@ def main():
 
 if __name__ == "__main__":
     main()
+
 

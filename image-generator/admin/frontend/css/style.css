@@ -1,0 +1,74 @@
+.card {
+    height: 100%;
+    transition: transform 0.3s;
+}
+
+.card:hover {
+    transform: scale(1.03);
+    box-shadow: 0 10px 20px rgba(0, 0, 0, 0.12), 0 4px 8px rgba(0, 0, 0, 0.06);
+}
+
+.card-img-top {
+    height: 300px;
+    object-fit: contain;
+}
+
+.pagination {
+    justify-content: center;
+    margin-top: 2rem;
+}
+
+.metadata {
+    font-size: 0.8rem;
+    color: #6c757d;
+}
+
+.alert {
+    margin-bottom: 20px;
+}
+
+.image-checkbox {
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    z-index: 10;
+    background-color: rgba(255, 255, 255, 0.7);
+    border-radius: 4px;
+    width: 24px;
+    height: 24px;
+}
+
+.selection-controls {
+    margin-bottom: 20px;
+    display: none;
+}
+
+.card-container {
+    position: relative;
+}
+
+.image-link {
+    text-decoration: none;
+    color: inherit;
+}
+
+.image-link:hover {
+    color: inherit;
+}
+
+/* Loading states */
+.loading {
+    opacity: 0.6;
+    pointer-events: none;
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+    .card-img-top {
+        height: 200px;
+    }
+    
+    .col-md-2 {
+        margin-bottom: 1rem;
+    }
+}

@@ -1,0 +1,128 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Image Gallery Admin</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="css/style.css">
+</head>
+
+<body>
+    <div class="container py-5">
+        <h1 class="text-center mb-5">Image Gallery Admin</h1>
+
+        <!-- Alert container for messages -->
+        <div id="alertContainer"></div>
+
+        <!-- Loading spinner -->
+        <div id="loadingSpinner" class="text-center mb-4" style="display: none;">
+            <div class="spinner-border" role="status">
+                <span class="visually-hidden">Loading...</span>
+            </div>
+        </div>
+
+        <!-- Filter section -->
+        <div class="card mb-4">
+            <div class="card-header">
+                <h5 class="mb-0">Filter Options</h5>
+            </div>
+            <div class="card-body">
+                <form id="filterForm">
+                    <div class="row g-3">
+                        <div class="col-md-2">
+                            <label for="historical_period" class="form-label">Historical Period</label>
+                            <select class="form-select" id="historical_period" name="historical_period">
+                                <option value="">All</option>
+                            </select>
+                        </div>
+                        <div class="col-md-2">
+                            <label for="gender" class="form-label">Gender</label>
+                            <select class="form-select" id="gender" name="gender">
+                                <option value="">All</option>
+                            </select>
+                        </div>
+                        <div class="col-md-2">
+                            <label for="skin_tone" class="form-label">Skin Tone</label>
+                            <select class="form-select" id="skin_tone" name="skin_tone">
+                                <option value="">All</option>
+                            </select>
+                        </div>
+                        <div class="col-md-2">
+                            <label for="profession" class="form-label">Profession</label>
+                            <select class="form-select" id="profession" name="profession">
+                                <option value="">All</option>
+                            </select>
+                        </div>
+                        <div class="col-md-2">
+                            <label for="artistic_style" class="form-label">Artistic Style</label>
+                            <select class="form-select" id="artistic_style" name="artistic_style">
+                                <option value="">All</option>
+                            </select>
+                        </div>
+                        <div class="col-md-2 d-flex align-items-end">
+                            <div class="w-100">
+                                <button type="submit" class="btn btn-primary w-100 mb-2">Apply Filters</button>
+                                <button type="button" id="resetFilters" class="btn btn-outline-secondary w-100">Reset</button>
+                            </div>
+                        </div>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        <!-- Active filters display -->
+        <div id="activeFilters" class="alert alert-info mb-4" style="display: none;">
+            <div class="d-flex align-items-center justify-content-between">
+                <div>
+                    <strong>Currently Applied Filters:</strong>
+                    <span id="filterBadges"></span>
+                </div>
+                <button id="clearAllFilters" class="btn btn-sm btn-outline-secondary">Clear All Filters</button>
+            </div>
+        </div>
+
+        <!-- Image count and selection controls -->
+        <div class="row mb-4">
+            <div class="col-md-6">
+                <p class="text-muted" id="imageCount">Loading...</p>
+            </div>
+            <div class="col-md-6 text-end">
+                <button id="selectModeBtn" class="btn btn-outline-primary">Selection Mode</button>
+            </div>
+        </div>
+
+        <!-- Selection mode controls -->
+        <div id="selectionControls" class="selection-controls mb-4" style="display: none;">
+            <div class="row">
+                <div class="col-md-6">
+                    <button id="selectAllBtn" class="btn btn-sm btn-outline-secondary me-2">Select All</button>
+                    <button id="deselectAllBtn" class="btn btn-sm btn-outline-secondary">Deselect All</button>
+                </div>
+                <div class="col-md-6 text-end">
+                    <button id="deleteSelectedBtn" class="btn btn-sm btn-danger">Delete Selected Images</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Images grid -->
+        <div id="imagesGrid" class="row row-cols-1 row-cols-md-2 row-cols-lg-3 g-4">
+            <!-- Images will be loaded here -->
+        </div>
+
+        <!-- Pagination -->
+        <nav aria-label="Page navigation" class="mt-5">
+            <ul id="pagination" class="pagination justify-content-center">
+                <!-- Pagination will be loaded here -->
+            </ul>
+        </nav>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="js/config.js"></script>
+    <script src="js/api.js"></script>
+    <script src="js/app.js"></script>
+</body>
+
+</html>

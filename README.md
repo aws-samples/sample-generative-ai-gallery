@@ -1,5 +1,7 @@
 # Global Summit 2025 - AI Image Gallery Project
 
+![](./docs/images/sample.jpg)
+
 This repository contains three interconnected projects that together form an AI-powered image gallery application:
 
 1. **gallery-backend**: Backend infrastructure and APIs
@@ -8,6 +10,28 @@ This repository contains three interconnected projects that together form an AI-
 
 ## Project Overview
 
+### Architecture
+
+![](./docs/images/genai-gallery-architecture-v2.png)
+
+Key Components:
+
+- [AWS Amplify](https://aws.amazon.com/amplify/): Provides frontend application hosting (using React).
+- [Amazon API Gateway](https://aws.amazon.com/api-gateway/) + [AWS Lambda](https://aws.amazon.com/lambda/): Used as backend API endpoints for image retrieval and upload.
+- [Amazon Bedrock](https://aws.amazon.com/bedrock/): A managed service that utilizes foundation models through APIs. It uses the Amazon Nova Canvas model for image generation and the Claude 3.5 Sonnet v2 model for descriptions.
+- [Amazon SageMaker](https://aws.amazon.com/sagemaker/): Deploys the necessary model as an Endpoint to process image synthesis requests.
+- [Amazon Rekognition](https://aws.amazon.com/rekognition/): Detects faces in images and videos, and crops the relevant facial areas.
+
+
+## Deploy
+
+## Requirements
+
+- AWS Account with appropriate permissions
+- Node.js v14 or higher
+- Python 3.8 or higher
+- AWS CDK installed and configured
+- AWS CLI installed and configured
 ### Gallery Backend
 
 The backend infrastructure is built using AWS CDK and provides the foundation for the entire application. It consists of several key components:
@@ -21,6 +45,8 @@ The backend infrastructure is built using AWS CDK and provides the foundation fo
 - **Container Infrastructure**: ECR repositories and CodeBuild pipelines for AI model containers
 
 The backend handles all data processing, storage, and AI model integration, providing a robust foundation for the application.
+
+> **For deployment instructions, please refer to the [gallery-backend README](./gallery-backend/README.md).**
 
 ### Gallery Frontend
 
@@ -36,6 +62,8 @@ The frontend is a React TypeScript application that provides the user interface 
 
 The frontend communicates with the backend APIs to provide a seamless user experience for image processing and management.
 
+> **For deployment instructions, please refer to the [gallery-frontend README](./gallery-frontend/README.md).**
+
 ### Image Generator
 
 The image generator is a Python-based utility that leverages Amazon Bedrock to create AI-generated images. It includes:
@@ -47,6 +75,8 @@ The image generator is a Python-based utility that leverages Amazon Bedrock to c
 - DynamoDB integration for tracking image metadata
 
 This component allows the application to generate high-quality base images that can be used in the face swapping process.
+
+> **For deployment instructions, please refer to the [image-generator README](./image-generator/README.md).**
 
 ## Amazon Bedrock Model Access Setup
 
@@ -184,31 +214,30 @@ Once all components are deployed, you can test the complete workflow:
 5. Process the image using the AI models deployed in the backend
 6. View and share your generated images
 
-## Architecture Diagram
 
-```
-┌─────────────────┐     ┌─────────────────┐     ┌─────────────────┐
-│                 │     │                 │     │                 │
-│ Gallery Frontend│────▶│  Gallery Backend│◀────│ Image Generator │
-│                 │     │                 │     │                 │
-└─────────────────┘     └─────────────────┘     └─────────────────┘
-        │                       │                       │
-        ▼                       ▼                       ▼
-┌─────────────────────────────────────────────────────────────────┐
-│                                                                 │
-│                       AWS Infrastructure                        │
-│                                                                 │
-└─────────────────────────────────────────────────────────────────┘
-```
-
-## Requirements
-
-- AWS Account with appropriate permissions
-- Node.js v14 or higher
-- Python 3.8 or higher
-- AWS CDK installed and configured
-- AWS CLI installed and configured
 
 ## Contributing
 
 Please refer to the individual project READMEs for specific contribution guidelines.
+
+## Contacts
+
+- [Chulwoo Choi](https://github.com/prorhap)
+- [Jinwoo Park](https://github.com/jinuland)
+- [Jungseob Shin](https://github.com/raphael-shin)
+- [Seongjin Ahn](https://github.com/tjdwlsdlaek)
+- [Kihoon Kwon](https://github.com/kyoonkwon)
+- [Jisoo Min](https://github.com/Jisoo-Min)
+- [Hyeryeong Joo](https://github.com/HyeryeongJoo)
+
+## Contributors
+
+[![genai-gallery contributors](https://contrib.rocks/image?repo=raphael-shin/my-aws-cdk-sample&max=1000)](https://github.com/raphael-shin/my-aws-cdk-sample/graphs/contributors)
+
+## License
+
+The code of this projects is released under the MIT License. See [the LICENSE file](./LICENSE).
+
+This software utilizes the [pre-trained models](https://github.com/modelscope/facechain). Users of this software must strictly adhere to these conditions of use. 
+
+Please note that if you intend to use this software for any commercial purposes, you will need to train your own models or find models that can be used commercially.

@@ -188,16 +188,16 @@ const ImageComponent = ({audioRef, element, handleAudioEnd}: ImageComponentProps
         </div>
       </div>
       <img className='display-image' src={element.imageUrl} alt="generative-gallery"/>
-      {/* {element.type === "bg3" &&
+      {element.type === "bg3" &&
       <div className="display-qr">
           <QRCode
               size={256}
               style={{ height: "100%", width: "100%", opacity: 0.5}}
-              value={"https://d3cqhkimjbonxf.cloudfront.net" + element.image.split("?")[0].slice(45)}
+              value={"https://dmlm6xibd3abb.cloudfront.net" + element.image.split("?")[0].slice(45)}
               viewBox={`0 0 256 256`}
           />
       </div>
-      } */}
+      }
     </div>
   );
 };

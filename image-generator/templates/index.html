@@ -1,0 +1,357 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Image Gallery</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        .card {
+            height: 100%;
+            transition: transform 0.3s;
+        }
+
+        .card:hover {
+            transform: scale(1.03);
+            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.12), 0 4px 8px rgba(0, 0, 0, 0.06);
+        }
+
+        .card-img-top {
+            height: 300px;
+            object-fit: contain;
+        }
+
+        .pagination {
+            justify-content: center;
+            margin-top: 2rem;
+        }
+
+        .metadata {
+            font-size: 0.8rem;
+            color: #6c757d;
+        }
+
+        .alert {
+            margin-bottom: 20px;
+        }
+
+        .image-checkbox {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            z-index: 10;
+            background-color: rgba(255, 255, 255, 0.7);
+            border-radius: 4px;
+            width: 24px;
+            height: 24px;
+        }
+
+        .selection-controls {
+            margin-bottom: 20px;
+            display: none;
+        }
+
+        .card-container {
+            position: relative;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container py-5">
+        <h1 class="text-center mb-5">Image Gallery</h1>
+
+        <!-- Flash messages display -->
+        {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+        {% for category, message in messages %}
+        <div class="alert alert-{{ category }}">{{ message }}</div>
+        {% endfor %}
+        {% endif %}
+        {% endwith %}
+
+        <!-- Filtering section -->
+        <div class="card mb-4">
+            <div class="card-header">
+                <h5 class="mb-0">Filter Options</h5>
+            </div>
+            <div class="card-body">
+                <form method="GET" action="{{ url_for('index') }}">
+                    <div class="row g-3">
+                        <div class="col-md-2">
+                            <label for="historical_period" class="form-label">Historical Period</label>
+                            <select class="form-select" id="historical_period" name="historical_period">
+                                <option value="">All</option>
+                                {% for period in filter_options.historical_periods %}
+                                <option value="{{ period }}" {% if current_filters.historical_period == period %}selected{% endif %}>{{ period }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        <div class="col-md-2">
+                            <label for="gender" class="form-label">Gender</label>
+                            <select class="form-select" id="gender" name="gender">
+                                <option value="">All</option>
+                                {% for gender in filter_options.genders %}
+                                <option value="{{ gender }}" {% if current_filters.gender == gender %}selected{% endif %}>{{ gender }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        <div class="col-md-2">
+                            <label for="skin_tone" class="form-label">Skin Tone</label>
+                            <select class="form-select" id="skin_tone" name="skin_tone">
+                                <option value="">All</option>
+                                {% for tone in filter_options.skin_tones %}
+                                <option value="{{ tone }}" {% if current_filters.skin_tone == tone %}selected{% endif %}>{{ tone }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        <div class="col-md-2">
+                            <label for="profession" class="form-label">Profession</label>
+                            <select class="form-select" id="profession" name="profession">
+                                <option value="">All</option>
+                                {% for prof in filter_options.professions %}
+                                <option value="{{ prof }}" {% if current_filters.profession == prof %}selected{% endif %}>{{ prof }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        <div class="col-md-2">
+                            <label for="artistic_style" class="form-label">Artistic Style</label>
+                            <select class="form-select" id="artistic_style" name="artistic_style">
+                                <option value="">All</option>
+                                {% for style in filter_options.artistic_styles %}
+                                <option value="{{ style }}" {% if current_filters.artistic_style == style %}selected{% endif %}>{{ style }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        <div class="col-md-2 d-flex align-items-end">
+                            <div class="w-100">
+                                <button type="submit" class="btn btn-primary w-100 mb-2">Apply Filters</button>
+                                <a href="{{ url_for('index') }}" class="btn btn-outline-secondary w-100">Reset</a>
+                            </div>
+                        </div>
+                    </div>
+                    <!-- Maintain current page and page size -->
+                    <input type="hidden" name="page" value="1">
+                    <input type="hidden" name="per_page" value="{{ per_page }}">
+                </form>
+            </div>
+        </div>
+
+        <!-- Display currently applied filters -->
+        {% set active_filters = [] %}
+        {% if current_filters.historical_period %}
+            {% set _ = active_filters.append('Historical Period: ' + current_filters.historical_period) %}
+        {% endif %}
+        {% if current_filters.gender %}
+            {% set _ = active_filters.append('Gender: ' + current_filters.gender) %}
+        {% endif %}
+        {% if current_filters.skin_tone %}
+            {% set _ = active_filters.append('Skin Tone: ' + current_filters.skin_tone) %}
+        {% endif %}
+        {% if current_filters.profession %}
+            {% set _ = active_filters.append('Profession: ' + current_filters.profession) %}
+        {% endif %}
+        {% if current_filters.artistic_style %}
+            {% set _ = active_filters.append('Artistic Style: ' + current_filters.artistic_style) %}
+        {% endif %}
+
+        {% if active_filters %}
+        <div class="alert alert-info mb-4">
+            <div class="d-flex align-items-center justify-content-between">
+                <div>
+                    <strong>Currently Applied Filters:</strong>
+                    {% for filter in active_filters %}
+                        <span class="badge bg-primary me-2">{{ filter }}</span>
+                    {% endfor %}
+                </div>
+                <a href="{{ url_for('index') }}" class="btn btn-sm btn-outline-secondary">Clear All Filters</a>
+            </div>
+        </div>
+        {% endif %}
+
+        <div class="row mb-4">
+            <div class="col-md-6">
+                <p class="text-muted">
+                    {% if active_filters %}
+                        Filtered Results: {{ total_images }} images, Page {{ page }}/{{ total_pages }}
+                    {% else %}
+                        Total: {{ total_images }} images, Page {{ page }}/{{ total_pages }}
+                    {% endif %}
+                </p>
+            </div>
+            <div class="col-md-6 text-end">
+                <button id="selectModeBtn" class="btn btn-outline-primary">Selection Mode</button>
+            </div>
+        </div>
+
+        <!-- Selection mode controls -->
+        <div id="selectionControls" class="selection-controls">
+            <div class="row mb-3">
+                <div class="col-md-6">
+                    <button id="selectAllBtn" class="btn btn-sm btn-outline-secondary me-2">Select All</button>
+                    <button id="deselectAllBtn" class="btn btn-sm btn-outline-secondary">Deselect All</button>
+                </div>
+                <div class="col-md-6 text-end">
+                    <button id="deleteSelectedBtn" class="btn btn-sm btn-danger">Delete Selected Images</button>
+                </div>
+            </div>
+        </div>
+
+        <form id="multiDeleteForm" action="{{ url_for('delete_multiple') }}" method="POST">
+            <div class="row row-cols-1 row-cols-md-2 row-cols-lg-3 g-4">
+                {% for image in images %}
+                <div class="col">
+                    <div class="card h-100 card-container">
+                        <!-- 체크박스 (기본적으로 숨겨져 있음) -->
+                        <input type="checkbox" name="selected_images" value="{{ image.key }}" class="image-checkbox"
+                            style="display: none;">
+
+                        <a href="{{ url_for('image_detail', key=image.key) }}" class="image-link">
+                            <img src="{{ image.url }}" class="card-img-top" alt="Generated Image">
+                        </a>
+                        <div class="card-body">
+                            <h5 class="card-title">Image #{{ loop.index + (page-1) * per_page }}</h5>
+                            {% if image.metadata %}
+                            <div class="metadata">
+                                <p class="mb-1"><strong>Historical Period:</strong> {{ image.metadata.historical_period }}</p>
+                                <p class="mb-1"><strong>Gender:</strong> {{ image.metadata.gender }}</p>
+                                <p class="mb-1"><strong>Skin Tone:</strong> {{ image.metadata.skin_tone }}</p>
+                                <p class="mb-1"><strong>Profession:</strong> {{ image.metadata.profession }}</p>
+                                <p class="mb-0"><strong>Artistic Style:</strong> {{ image.metadata.artistic_style }}</p>
+                            </div>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+        </form>
+
+        {% if total_pages > 1 %}
+        <nav aria-label="Page navigation" class="mt-5">
+            <ul class="pagination">
+                {% if page > 1 %}
+                <li class="page-item">
+                    <a class="page-link" href="{{ url_for('index', page=page-1, per_page=per_page, gender=current_filters.gender, skin_tone=current_filters.skin_tone, profession=current_filters.profession, historical_period=current_filters.historical_period, artistic_style=current_filters.artistic_style) }}"
+                        aria-label="Previous">
+                        <span aria-hidden="true">&laquo;</span>
+                    </a>
+                </li>
+                {% endif %}
+
+                {% for p in range(1, total_pages + 1) %}
+                <li class="page-item {% if p == page %}active{% endif %}">
+                    <a class="page-link" href="{{ url_for('index', page=p, per_page=per_page, gender=current_filters.gender, skin_tone=current_filters.skin_tone, profession=current_filters.profession, historical_period=current_filters.historical_period, artistic_style=current_filters.artistic_style) }}">{{ p }}</a>
+                </li>
+                {% endfor %}
+
+                {% if page < total_pages %} <li class="page-item">
+                    <a class="page-link" href="{{ url_for('index', page=page+1, per_page=per_page, gender=current_filters.gender, skin_tone=current_filters.skin_tone, profession=current_filters.profession, historical_period=current_filters.historical_period, artistic_style=current_filters.artistic_style) }}"
+                        aria-label="Next">
+                        <span aria-hidden="true">&raquo;</span>
+                    </a>
+                    </li>
+                    {% endif %}
+            </ul>
+        </nav>
+        {% endif %}
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            const selectModeBtn = document.getElementById('selectModeBtn');
+            const selectionControls = document.getElementById('selectionControls');
+            const checkboxes = document.querySelectorAll('.image-checkbox');
+            const imageLinks = document.querySelectorAll('.image-link');
+            const selectAllBtn = document.getElementById('selectAllBtn');
+            const deselectAllBtn = document.getElementById('deselectAllBtn');
+            const deleteSelectedBtn = document.getElementById('deleteSelectedBtn');
+            const multiDeleteForm = document.getElementById('multiDeleteForm');
+
+            let selectMode = false;
+
+            // 선택 모드 토글
+            selectModeBtn.addEventListener('click', function () {
+                selectMode = !selectMode;
+
+                if (selectMode) {
+                    // Activate selection mode
+                    selectModeBtn.textContent = 'Exit Selection Mode';
+                    selectModeBtn.classList.remove('btn-outline-primary');
+                    selectModeBtn.classList.add('btn-primary');
+                    selectionControls.style.display = 'block';
+
+                    // Show checkboxes
+                    checkboxes.forEach(checkbox => {
+                        checkbox.style.display = 'block';
+                    });
+
+                    // Disable image links
+                    imageLinks.forEach(link => {
+                        link.style.pointerEvents = 'none';
+                    });
+                } else {
+                    // Deactivate selection mode
+                    selectModeBtn.textContent = 'Selection Mode';
+                    selectModeBtn.classList.remove('btn-primary');
+                    selectModeBtn.classList.add('btn-outline-primary');
+                    selectionControls.style.display = 'none';
+
+                    // Hide checkboxes
+                    checkboxes.forEach(checkbox => {
+                        checkbox.style.display = 'none';
+                        checkbox.checked = false;
+                    });
+
+                    // Enable image links
+                    imageLinks.forEach(link => {
+                        link.style.pointerEvents = 'auto';
+                    });
+                }
+            });
+
+            // 모두 선택 버튼
+            selectAllBtn.addEventListener('click', function () {
+                checkboxes.forEach(checkbox => {
+                    checkbox.checked = true;
+                });
+            });
+
+            // 모두 선택 해제 버튼
+            deselectAllBtn.addEventListener('click', function () {
+                checkboxes.forEach(checkbox => {
+                    checkbox.checked = false;
+                });
+            });
+
+            // Delete selected images button
+            deleteSelectedBtn.addEventListener('click', function () {
+                const selectedCount = document.querySelectorAll('.image-checkbox:checked').length;
+
+                if (selectedCount === 0) {
+                    alert('Please select images to delete.');
+                    return;
+                }
+
+                if (confirm(`Are you sure you want to delete ${selectedCount} selected images?`)) {
+                    multiDeleteForm.submit();
+                }
+            });
+
+            // 카드 클릭 시 체크박스 토글 (선택 모드일 때만)
+            document.querySelectorAll('.card').forEach(card => {
+                card.addEventListener('click', function (e) {
+                    if (selectMode) {
+                        const checkbox = this.querySelector('.image-checkbox');
+                        checkbox.checked = !checkbox.checked;
+                        e.preventDefault();
+                    }
+                });
+            });
+        });
+    </script>
+</body>
+
+</html>

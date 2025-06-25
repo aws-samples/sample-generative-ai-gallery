@@ -7,7 +7,7 @@ class AppConfig:
     # AWS Configuration
     BEDROCK_REGION: str = "us-east-1"  # Nova Canvas is only available in us-east-1
     DYNAMODB_REGION: str = "us-west-2"  # DynamoDB is in us-west-2
-    S3_BUCKET: str = 'amazon-bedrock-gallery-global-<your-unique-id>'
+    S3_BUCKET: str = 'amazon-bedrock-gallery-global-sheetal'
     S3_PREFIX: str = 'images/base-image/'
     DYNAMODB_TABLE: str = 'ddb-amazon-bedrock-gallery-base-resource'
     
@@ -25,6 +25,7 @@ class AppConfig:
 # Historical Periods (5 significant eras)
 HISTORICAL_PERIODS: List[str] = [
     "ancient_rome",
+    "ancient_india",
     # "medieval_period",
     # "renaissance"
 ]
@@ -50,6 +51,12 @@ PROFESSIONS: Dict[str, List[str]] = {
         "military_general",
         "merchant"
     ],
+    "ancient_india": [
+        "priest",
+        "philosopher",
+        "military_general",
+        "merchant"
+    ],
     "medieval_period": [
         "knight",
         "monk_nun",
@@ -62,12 +69,14 @@ PROFESSIONS: Dict[str, List[str]] = {
 ARTISTIC_STYLES: List[str] = [
     "realism_style_of_gustave_courbet",
     "impressionism_style_of_claude_monet",
+    "impressionism_style_of_rajaram_mohan_roy",
 ]
 
 # Display names for Prompt
 DISPLAY_NAMES: Dict[str, Dict] = {
     "historical_periods": {
         "ancient_rome": "Ancient Rome (27 BC - 476 AD)",
+        "ancient_india": "Ancient India (600 BC - 200 AD)",
         "medieval_period": "Medieval Period (5th-15th century)",
         "renaissance": "Renaissance (14th-17th century)"
     },
@@ -90,6 +99,12 @@ DISPLAY_NAMES: Dict[str, Dict] = {
             "military_general": "Military General",
             "merchant": "Merchant"
         },
+        "ancient_india": {
+            "priest": "Priest",
+            "philosopher": "Philosopher",
+            "military_general": "Military General",
+            "merchant": "Merchant"
+        },
         "medieval_period": {
             "knight": "Knight",
             "monk_nun": "Monk/Nun",
@@ -101,10 +116,10 @@ DISPLAY_NAMES: Dict[str, Dict] = {
             "scholar": "Scholar",
             "merchant": "Merchant",
             "nobleman_noblewoman": "Nobleman/Noblewoman"
-        },
+        }
     },
     "artistic_styles": {
-        "realism_style_of_gustave_courbet": "Realism (style of Gustave Courbet)",
+        "realism_style_of_raja_ram_mohan_roy": "Realism (style of Raja Ram Mohan Roy)",
         "impressionism_style_of_claude_monet": "Impressionism (style of Claude Monet)"
     }
 }
@@ -131,4 +146,4 @@ Remember these key principles for image generation:
 - Emphasize the depth and richness of oil paint, with characteristic blending and layering
 - Include the natural sheen and luminosity typical of oil paintings
 - Ensure the painting has the traditional oil painting finish and appearance
-""" 
+"""
