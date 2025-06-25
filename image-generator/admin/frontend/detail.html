@@ -1,0 +1,221 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Image Detail - Gallery Admin</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+    <div class="container py-5">
+        <div class="row mb-4">
+            <div class="col">
+                <a href="index.html" class="btn btn-outline-primary">&larr; Back to Gallery</a>
+            </div>
+        </div>
+
+        <!-- Loading spinner -->
+        <div id="loadingSpinner" class="text-center mb-4">
+            <div class="spinner-border" role="status">
+                <span class="visually-hidden">Loading...</span>
+            </div>
+        </div>
+
+        <!-- Alert container -->
+        <div id="alertContainer"></div>
+
+        <!-- Image detail content -->
+        <div id="imageDetail" style="display: none;">
+            <div class="row">
+                <div class="col-md-8">
+                    <div class="img-container">
+                        <img id="detailImage" class="detail-img" alt="Generated Image">
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="metadata-card">
+                        <h3 class="mb-4">Image Information</h3>
+                        <div id="metadataContent">
+                            <!-- Metadata will be loaded here -->
+                        </div>
+                        
+                        <div class="mt-4">
+                            <h5>File Information</h5>
+                            <p class="text-muted" id="fileInfo"></p>
+                        </div>
+                        
+                        <!-- Delete button -->
+                        <button id="deleteBtn" class="btn delete-btn w-100">Delete Image</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="js/config.js"></script>
+    <script src="js/api.js"></script>
+    <script>
+        class ImageDetailApp {
+            constructor() {
+                this.imageKey = this.getImageKeyFromURL();
+                this.initializeElements();
+                this.bindEvents();
+                
+                if (this.imageKey) {
+                    this.loadImageDetail();
+                } else {
+                    this.showAlert('No image key provided', 'danger');
+                }
+            }
+
+            initializeElements() {
+                this.elements = {
+                    loadingSpinner: document.getElementById('loadingSpinner'),
+                    alertContainer: document.getElementById('alertContainer'),
+                    imageDetail: document.getElementById('imageDetail'),
+                    detailImage: document.getElementById('detailImage'),
+                    metadataContent: document.getElementById('metadataContent'),
+                    fileInfo: document.getElementById('fileInfo'),
+                    deleteBtn: document.getElementById('deleteBtn')
+                };
+            }
+
+            bindEvents() {
+                this.elements.deleteBtn.addEventListener('click', () => {
+                    this.deleteImage();
+                });
+            }
+
+            getImageKeyFromURL() {
+                const urlParams = new URLSearchParams(window.location.search);
+                return urlParams.get('key');
+            }
+
+            showAlert(message, type = 'info') {
+                const alertDiv = document.createElement('div');
+                alertDiv.className = `alert alert-${type} alert-dismissible fade show`;
+                alertDiv.innerHTML = `
+                    ${message}
+                    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                `;
+                this.elements.alertContainer.appendChild(alertDiv);
+            }
+
+            async loadImageDetail() {
+                try {
+                    const response = await api.fetchImageDetail(this.imageKey);
+                    
+                    if (response.success) {
+                        this.renderImageDetail(response.image);
+                    } else {
+                        this.showAlert('Error loading image: ' + response.error, 'danger');
+                    }
+                } catch (error) {
+                    this.showAlert('Error loading image: ' + error.message, 'danger');
+                } finally {
+                    this.elements.loadingSpinner.style.display = 'none';
+                }
+            }
+
+            renderImageDetail(image) {
+                // Set image
+                this.elements.detailImage.src = image.url;
+                
+                // Set file info
+                this.elements.fileInfo.textContent = image.key;
+                
+                // Render metadata
+                if (image.metadata && Object.keys(image.metadata).length > 0) {
+                    const metadata = image.metadata;
+                    this.elements.metadataContent.innerHTML = `
+                        <div class="mb-3">
+                            <h5>Historical Period</h5>
+                            <p>${metadata.historical_period || 'N/A'}</p>
+                        </div>
+                        <div class="mb-3">
+                            <h5>Gender</h5>
+                            <p>${metadata.gender || 'N/A'}</p>
+                        </div>
+                        <div class="mb-3">
+                            <h5>Skin Tone</h5>
+                            <p>${metadata.skin_tone || 'N/A'}</p>
+                        </div>
+                        <div class="mb-3">
+                            <h5>Profession</h5>
+                            <p>${metadata.profession || 'N/A'}</p>
+                        </div>
+                        <div class="mb-3">
+                            <h5>Artistic Style</h5>
+                            <p>${metadata.artistic_style || 'N/A'}</p>
+                        </div>
+                    `;
+                } else {
+                    this.elements.metadataContent.innerHTML = '<p>No metadata available for this image.</p>';
+                }
+                
+                // Show the detail section
+                this.elements.imageDetail.style.display = 'block';
+            }
+
+            async deleteImage() {
+                if (!confirm('Are you sure you want to delete this image?')) {
+                    return;
+                }
+
+                try {
+                    const response = await api.deleteImage(this.imageKey);
+                    
+                    if (response.success) {
+                        this.showAlert(response.message, 'success');
+                        // Redirect to gallery after 2 seconds
+                        setTimeout(() => {
+                            window.location.href = 'index.html';
+                        }, 2000);
+                    } else {
+                        this.showAlert('Error deleting image: ' + response.error, 'danger');
+                    }
+                } catch (error) {
+                    this.showAlert('Error deleting image: ' + error.message, 'danger');
+                }
+            }
+        }
+
+        // Initialize the app when DOM is loaded
+        document.addEventListener('DOMContentLoaded', () => {
+            new ImageDetailApp();
+        });
+    </script>
+
+    <style>
+        .img-container {
+            max-height: 80vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+        .detail-img {
+            max-height: 80vh;
+            max-width: 100%;
+            object-fit: contain;
+        }
+        .metadata-card {
+            background-color: #f8f9fa;
+            border-radius: 10px;
+            padding: 20px;
+            margin-top: 20px;
+        }
+        .delete-btn {
+            background-color: #dc3545;
+            color: white;
+            border: none;
+            margin-top: 20px;
+        }
+        .delete-btn:hover {
+            background-color: #c82333;
+            color: white;
+        }
+    </style>
+</body>
+</html>

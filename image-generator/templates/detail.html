@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Image Detail View</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        .img-container {
+            max-height: 80vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+        .detail-img {
+            max-height: 80vh;
+            max-width: 100%;
+            object-fit: contain;
+        }
+        .metadata-card {
+            background-color: #f8f9fa;
+            border-radius: 10px;
+            padding: 20px;
+            margin-top: 20px;
+        }
+        .delete-btn {
+            background-color: #dc3545;
+            color: white;
+            border: none;
+            margin-top: 20px;
+        }
+        .delete-btn:hover {
+            background-color: #c82333;
+            color: white;
+        }
+    </style>
+</head>
+<body>
+    <div class="container py-5">
+        <div class="row mb-4">
+            <div class="col">
+                <a href="{{ url_for('index') }}" class="btn btn-outline-primary">&larr; Back to Gallery</a>
+            </div>
+        </div>
+        
+        <div class="row">
+            <div class="col-md-8">
+                <div class="img-container">
+                    <img src="{{ image.url }}" class="detail-img" alt="Generated Image">
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="metadata-card">
+                    <h3 class="mb-4">Image Information</h3>
+                    {% if image.metadata %}
+                    <div class="mb-3">
+                        <h5>Historical Period</h5>
+                        <p>{{ image.metadata.historical_period }}</p>
+                    </div>
+                    <div class="mb-3">
+                        <h5>Gender</h5>
+                        <p>{{ image.metadata.gender }}</p>
+                    </div>
+                    <div class="mb-3">
+                        <h5>Skin Tone</h5>
+                        <p>{{ image.metadata.skin_tone }}</p>
+                    </div>
+                    <div class="mb-3">
+                        <h5>Profession</h5>
+                        <p>{{ image.metadata.profession }}</p>
+                    </div>
+                    <div class="mb-3">
+                        <h5>Artistic Style</h5>
+                        <p>{{ image.metadata.artistic_style }}</p>
+                    </div>
+                    {% else %}
+                    <p>No metadata available for this image.</p>
+                    {% endif %}
+                    
+                    <div class="mt-4">
+                        <h5>File Information</h5>
+                        <p class="text-muted">{{ image.key }}</p>
+                    </div>
+                    
+                    <!-- Delete button -->
+                    <form action="{{ url_for('delete_image', key=image.key) }}" method="POST" onsubmit="return confirm('Are you sure you want to delete this image?');">
+                        <button type="submit" class="btn delete-btn w-100">Delete Image</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>
